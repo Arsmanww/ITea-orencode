@@ -1,0 +1,56 @@
+# Запуск: docker compose up -d --build
+# Файл .env необязателен: у всех переменных есть значения по умолчанию (см. .env.example).
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fsp_demo_password}
+      POSTGRES_DB: ${POSTGRES_DB:-fsp}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fsp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fsp_demo_password}
+      POSTGRES_DB: ${POSTGRES_DB:-fsp}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: "5432"
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me-before-production}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      SEED_ON_START: ${SEED_ON_START:-true}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:-}
+      MAX_BOT_USERNAME: ${MAX_BOT_USERNAME:-}
+      MAX_API_BASE: ${MAX_API_BASE:-https://platform-api2.max.ru}
+    volumes:
+      - uploads:/srv/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT:-8000}:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+
+volumes:
+  pgdata:
+  uploads:

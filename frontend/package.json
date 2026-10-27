@@ -1,0 +1,30 @@
+{
+  "name": "fsp-orenburg-frontend",
+  "private": true,
+  "version": "0.3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.0",
+    "@fontsource-variable/inter": "5.1.1",
+    "@fontsource-variable/jetbrains-mono": "5.1.1",
+    "@mui/icons-material": "6.4.3",
+    "@mui/material": "6.4.3",
+    "@tanstack/react-query": "5.62.16",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.7.3",
+    "vite": "6.1.0"
+  }
+}

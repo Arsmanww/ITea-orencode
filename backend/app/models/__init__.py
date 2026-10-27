@@ -1,0 +1,99 @@
+"""Импорт всех моделей нужен Alembic: метаданные Base видят только импортированные классы."""
+
+from app.models.base import Base
+from app.models.coach import CoachAthleteLink, CoachLinkHistory
+from app.models.competitions import (
+    Competition,
+    CompetitionAgeGroup,
+    CompetitionApplication,
+    CompetitionJudge,
+    CompetitionStage,
+    Team,
+)
+from app.models.identity import (
+    AthleteEnrollment,
+    AthleteProfile,
+    CoachProfile,
+    Consent,
+    JudgeProfile,
+    Role,
+    StoredFile,
+    User,
+    UserRole,
+)
+from app.models.ranks import (
+    JudgeCategoryAssignment,
+    JudgeCategoryRequest,
+    RankAssignment,
+    RankRequest,
+)
+from app.models.reference import (
+    AgeGroup,
+    CompetitionType,
+    Discipline,
+    JudgeCategory,
+    JudgePosition,
+    Municipality,
+    Organization,
+    Rank,
+    RankRequirement,
+    RatingRule,
+    RatingSettings,
+    Season,
+)
+from app.models.results import Protocol, Result, Sanction
+from app.models.squads import Squad, SquadMember
+from app.models.system import (
+    AuditLog,
+    ContentPage,
+    Notification,
+    NotificationDelivery,
+    ParticipationCertificate,
+)
+
+__all__ = [
+    "AgeGroup",
+    "AthleteEnrollment",
+    "AthleteProfile",
+    "AuditLog",
+    "Base",
+    "CoachAthleteLink",
+    "CoachLinkHistory",
+    "CoachProfile",
+    "Competition",
+    "CompetitionAgeGroup",
+    "CompetitionApplication",
+    "CompetitionJudge",
+    "CompetitionStage",
+    "CompetitionType",
+    "Consent",
+    "ContentPage",
+    "Discipline",
+    "JudgeCategory",
+    "JudgeCategoryAssignment",
+    "JudgeCategoryRequest",
+    "JudgePosition",
+    "JudgeProfile",
+    "Municipality",
+    "Notification",
+    "NotificationDelivery",
+    "Organization",
+    "ParticipationCertificate",
+    "Protocol",
+    "Rank",
+    "RankAssignment",
+    "RankRequest",
+    "RankRequirement",
+    "RatingRule",
+    "RatingSettings",
+    "Result",
+    "Role",
+    "Sanction",
+    "Season",
+    "Squad",
+    "SquadMember",
+    "StoredFile",
+    "Team",
+    "User",
+    "UserRole",
+]
