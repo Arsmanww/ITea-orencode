@@ -8,7 +8,7 @@
 
 from datetime import date, datetime, timedelta, timezone
 
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import (
@@ -21,7 +21,7 @@ from app.models import (
     User,
 )
 from app.models.enums import ApplicationStatus, CompetitionStatus, LinkStatus, NotificationKind
-from app.services.eligibility import age_on
+from app.services.eligibility import age_on, enrollment_conditions
 from app.services.notifications import federation_user_ids, notify
 
 DEADLINE_WARNING_DAYS = 3
@@ -37,9 +37,7 @@ async def eligible_audience(session: AsyncSession, comp: Competition) -> tuple[s
     )).all()
     rows = (await session.execute(
         select(User.id, User.birth_date).join(AthleteEnrollment, AthleteEnrollment.athlete_id == User.id)
-        .where(User.is_active.is_(True), AthleteEnrollment.discipline_id == comp.discipline_id,
-               AthleteEnrollment.start_date <= comp.start_date,
-               or_(AthleteEnrollment.end_date.is_(None), AthleteEnrollment.end_date >= comp.start_date))
+        .where(User.is_active.is_(True), *enrollment_conditions(comp, date.today()))
         .distinct()
     )).all()
     athletes = {uid for uid, birth in rows if any(g.min_age <= age_on(birth, comp.start_date) <= g.max_age for g in groups)}

@@ -23,7 +23,7 @@ import { useEffect, useState, type ReactNode } from "react";
 
 import type { AgeGroup, Organization, Paged, Ref, RegistryAthlete, RegistryCoach, RegistryJudge, RegistryOrganization } from "../api/types";
 import { AthleteHistoryDialog } from "../components/AthleteHistoryDialog";
-import { Async, EmptyState, PageTitle, useGet } from "../components/common";
+import { Async, EmptyState, PageTitle, useGet, useTabs } from "../components/common";
 import { capitalize } from "../components/home/parts";
 import { fmtDate } from "../utils/format";
 import { ORG_TYPE_LABEL, STAGE_LABEL } from "../utils/labels";
@@ -297,11 +297,11 @@ function OrganizationsTab() {
 }
 
 export function RegistryPage() {
-  const [tab, setTab] = useState(0);
+  const { tab, onChange } = useTabs();
   return (
     <Box>
       <PageTitle title="Реестр" subtitle="Спортсмены, тренеры, судьи и организации: поиск и фильтры по дисциплине, организации, разряду, возрасту и муниципалитету" />
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+      <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
         <Tab label="Спортсмены" />
         <Tab label="Тренеры" />
         <Tab label="Судьи" />

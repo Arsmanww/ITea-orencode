@@ -2,6 +2,7 @@ import { Box, Container, Stack, Typography } from "@mui/material";
 import type { ReactNode } from "react";
 
 import { BRAND, FONT_MONO } from "../../theme";
+import { Reveal } from "../Reveal";
 
 /** Секция главной: единые вертикальные отступы (кратны 8) и заголовок «моно-эйбрау + h2». */
 export function HomeSection({
@@ -22,7 +23,8 @@ export function HomeSection({
   return (
     <Box sx={{ py: { xs: 7, md: 10 }, bgcolor: tone === "white" ? "#fff" : "transparent", borderTop: tone === "white" ? `1px solid ${BRAND.border}` : "none", borderBottom: tone === "white" ? `1px solid ${BRAND.border}` : "none" }}>
       <Container maxWidth="lg">
-        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "flex-end" }} spacing={2} sx={{ mb: { xs: 4, md: 5 } }}>
+        <Reveal sx={{ mb: { xs: 4, md: 5 } }}>
+        <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems={{ xs: "flex-start", sm: "flex-end" }} spacing={2}>
           <Box sx={{ maxWidth: 640 }}>
             <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: BRAND.blue, mb: 1.5 }}>
               {"{ "}
@@ -40,7 +42,8 @@ export function HomeSection({
           </Box>
           {actions}
         </Stack>
-        {children}
+        </Reveal>
+        <Reveal delay={120}>{children}</Reveal>
       </Container>
     </Box>
   );

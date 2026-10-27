@@ -1,13 +1,7 @@
-import AirplanemodeActiveIcon from "@mui/icons-material/AirplanemodeActive";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import CodeIcon from "@mui/icons-material/Code";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
-import PsychologyIcon from "@mui/icons-material/Psychology";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
-import SecurityIcon from "@mui/icons-material/Security";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { Box, Button, Card, CardActionArea, Chip, MenuItem, Skeleton, Stack, TextField, Typography } from "@mui/material";
-import { useMemo, useState, type ReactElement } from "react";
+import { useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 import type { FeedItem, LeaderRow, Navigator, RegistrationOptions } from "../../api/types";
@@ -15,17 +9,10 @@ import { useAuth } from "../../auth/AuthContext";
 import { BRAND, FONT_MONO } from "../../theme";
 import { fmtDate, plural } from "../../utils/format";
 import { FORMAT_LABEL, LEVEL_LABEL, ORG_TYPE_LABEL, ROLE_HOME } from "../../utils/labels";
+import { DisciplineIcon } from "../brand/DisciplineIcon";
 import { EmptyState, useGet } from "../common";
+import { Reveal } from "../Reveal";
 import { HomeSection, capitalize, hiddenScrollbar, shortTitle } from "./parts";
-
-const ICONS: Record<string, ReactElement> = {
-  algorithmic: <CodeIcon />,
-  product: <RocketLaunchIcon />,
-  infosec: <SecurityIcon />,
-  ai: <PsychologyIcon />,
-  robotics: <SmartToyIcon />,
-  uas: <AirplanemodeActiveIcon />,
-};
 
 /* ---------- 6 дисциплин ---------- */
 export function DisciplineGrid({ nav }: { nav: Navigator }) {
@@ -33,9 +20,10 @@ export function DisciplineGrid({ nav }: { nav: Navigator }) {
     <HomeSection eyebrow="дисциплины" title="Шесть направлений вида спорта" subtitle="Учёт, календарь, разряды и отчёты работают одинаково для всех дисциплин.">
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" }, gap: 3 }}>
         {nav.disciplines.map((d, i) => (
-          <Card key={d.id} sx={{ p: 3, transition: "border-color .2s, transform .2s, box-shadow .2s", "&:hover": { borderColor: BRAND.blue, transform: "translateY(-2px)", boxShadow: "0 12px 32px -16px rgba(43,89,255,0.45)" } }}>
+          <Reveal key={d.id} delay={i * 70} sx={{ height: "100%" }}>
+          <Card sx={{ height: "100%", p: 3, transition: "border-color .2s, transform .2s, box-shadow .2s", "&:hover": { borderColor: BRAND.blue, transform: "translateY(-2px)", boxShadow: "0 12px 32px -16px rgba(43,89,255,0.45)" } }}>
             <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 2.5 }}>
-              <Box sx={{ width: 48, height: 48, borderRadius: 3, display: "grid", placeItems: "center", color: BRAND.blue, bgcolor: "#EAF0FF" }}>{ICONS[d.code]}</Box>
+              <DisciplineIcon code={d.code} size={36} />
               <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, color: "text.secondary" }}>{String(i + 1).padStart(2, "0")}</Typography>
             </Stack>
             <Typography variant="h6" sx={{ mb: 1, lineHeight: 1.3 }}>
@@ -48,6 +36,7 @@ export function DisciplineGrid({ nav }: { nav: Navigator }) {
               {d.athletes} {plural(d.athletes, ["спортсмен", "спортсмена", "спортсменов"])}
             </Typography>
           </Card>
+          </Reveal>
         ))}
       </Box>
     </HomeSection>
@@ -82,11 +71,12 @@ export function TournamentGrid({ nav }: { nav: Navigator }) {
         <EmptyState title="По этой дисциплине ближайших турниров нет" hint="Выберите другую дисциплину или откройте полный календарь" />
       ) : (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 3 }}>
-          {list.map((c) => {
+          {list.map((c, i) => {
             const d = new Date(`${c.start_date}T00:00:00`);
             const open = c.status === "registration_open";
             return (
-              <Card key={c.id} sx={{ height: "100%" }}>
+              <Reveal key={c.id} delay={i * 70} sx={{ height: "100%" }}>
+              <Card sx={{ height: "100%", transition: "border-color .2s, transform .2s, box-shadow .2s", "&:hover": { borderColor: BRAND.blue, transform: "translateY(-2px)", boxShadow: "0 12px 32px -16px rgba(43,89,255,0.45)" } }}>
                 <CardActionArea component={RouterLink} to={`/competitions/${c.id}`} sx={{ p: 3, height: "100%", display: "flex", gap: 2.5, alignItems: "flex-start", justifyContent: "flex-start" }}>
                   <Box sx={{ minWidth: 64, py: 1.25, textAlign: "center", borderRadius: 3, bgcolor: BRAND.ink, color: "#fff" }}>
                     <Typography sx={{ fontFamily: FONT_MONO, fontWeight: 700, fontSize: 24, lineHeight: 1 }}>{String(d.getDate()).padStart(2, "0")}</Typography>
@@ -114,6 +104,7 @@ export function TournamentGrid({ nav }: { nav: Navigator }) {
                   </Box>
                 </CardActionArea>
               </Card>
+              </Reveal>
             );
           })}
         </Box>
@@ -235,12 +226,14 @@ export function HowItWorks() {
   return (
     <HomeSection eyebrow="как это работает" title="От регистрации до разряда за три шага">
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" }, gap: 3 }}>
-        {steps.map((s) => (
-          <Card key={s.n} sx={{ p: 4, position: "relative", overflow: "hidden" }}>
+        {steps.map((s, i) => (
+          <Reveal key={s.n} delay={i * 90} sx={{ height: "100%" }}>
+          <Card sx={{ height: "100%", p: 4, position: "relative", overflow: "hidden" }}>
             <Typography sx={{ fontFamily: FONT_MONO, fontWeight: 700, fontSize: 56, lineHeight: 1, color: "#E3EAFF", letterSpacing: "-0.04em", mb: 2 }}>{s.n}</Typography>
             <Typography variant="h6" sx={{ mb: 1 }}>{s.t}</Typography>
             <Typography variant="body2" color="text.secondary">{s.d}</Typography>
           </Card>
+          </Reveal>
         ))}
       </Box>
     </HomeSection>
@@ -252,8 +245,9 @@ export function Organizations({ nav }: { nav: Navigator }) {
   return (
     <HomeSection tone="white" eyebrow="организации" title="Где заниматься в области" subtitle="Школы, колледжи, вузы, спортивные школы и клубы по городам.">
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 3 }}>
-        {nav.municipalities.map((m) => (
-          <Card key={m.municipality} sx={{ p: 3 }}>
+        {nav.municipalities.map((m, i) => (
+          <Reveal key={m.municipality} delay={i * 70} sx={{ height: "100%" }}>
+          <Card sx={{ height: "100%", p: 3 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="baseline" sx={{ mb: 2 }}>
               <Typography variant="h6">{m.municipality}</Typography>
               <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, color: "text.secondary" }}>{m.organizations.length} орг.</Typography>
@@ -267,6 +261,7 @@ export function Organizations({ nav }: { nav: Navigator }) {
               ))}
             </Stack>
           </Card>
+          </Reveal>
         ))}
       </Box>
     </HomeSection>
@@ -279,7 +274,7 @@ export function CtaBand() {
   return (
     <Box sx={{ py: { xs: 7, md: 10 } }}>
       <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 } }}>
-        <Box
+        <Reveal
           sx={{
             position: "relative",
             overflow: "hidden",
@@ -299,7 +294,7 @@ export function CtaBand() {
           <Button size="large" variant="contained" component={RouterLink} to={me ? ROLE_HOME[me.active_role] : "/register"} sx={{ bgcolor: "#fff", color: BRAND.blueDark, boxShadow: "none", "&:hover": { bgcolor: "#EEF2FF", boxShadow: "none" } }}>
             {me ? "Перейти в кабинет" : "Зарегистрироваться"}
           </Button>
-        </Box>
+        </Reveal>
       </Box>
     </Box>
   );

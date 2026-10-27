@@ -1,10 +1,11 @@
 import AddIcon from "@mui/icons-material/Add";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EventIcon from "@mui/icons-material/Event";
 import PlaceIcon from "@mui/icons-material/Place";
-import { Box, Button, Card, CardActionArea, CardContent, Chip, FormControlLabel, MenuItem, Pagination, Stack, Switch, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, CardActionArea, CardActions, CardContent, Chip, FormControlLabel, MenuItem, Pagination, Stack, Switch, TextField, Typography } from "@mui/material";
 import { useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useSearchParams } from "react-router-dom";
 
 import type { AgeGroup, AthleteProfile, CompetitionList, Ref } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
@@ -17,7 +18,9 @@ const PAGE_SIZE = 12;
 
 export function CalendarPage() {
   const { me } = useAuth();
-  const [f, setF] = useState({ discipline: "", status: "", year: "", level: "", age_group_id: "" });
+  // статус можно задать ссылкой: плашка «приём заявок» в шапке ведёт на уже отфильтрованный календарь
+  const [params] = useSearchParams();
+  const [f, setF] = useState({ discipline: "", status: params.get("status") ?? "", year: "", level: "", age_group_id: "" });
   const [forMe, setForMe] = useState(false);
   const [page, setPage] = useState(1);
   const disciplines = useGet<Ref[]>("/reference/disciplines");
@@ -26,6 +29,7 @@ export function CalendarPage() {
     ...f, for_me: me?.active_role === "athlete" && forMe ? true : undefined, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE,
   });
   const isAthlete = me?.active_role === "athlete";
+  const isCoach = me?.active_role === "coach";
   const profile = useGet<AthleteProfile>("/athletes/me/profile", undefined, { enabled: isAthlete });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
     setF((p) => ({ ...p, [k]: e.target.value }));
@@ -80,6 +84,19 @@ export function CalendarPage() {
           ))}
         </TextField>
       </Box>
+      {(isAthlete || isCoach) && (
+        <Stack direction="row" spacing={1} sx={{ mb: 1.5 }} flexWrap="wrap" useFlexGap>
+          <Chip
+            color={f.status === "registration_open" ? "primary" : "default"}
+            variant={f.status === "registration_open" ? "filled" : "outlined"}
+            label={isCoach ? "Сейчас можно подать за подопечного" : "Сейчас принимают заявки"}
+            onClick={() => {
+              setF((p) => ({ ...p, status: p.status === "registration_open" ? "" : "registration_open" }));
+              setPage(1);
+            }}
+          />
+        </Stack>
+      )}
       {isAthlete && (
         <FormControlLabel
           sx={{ mb: 2 }}
@@ -135,6 +152,18 @@ export function CalendarPage() {
                           </Typography>
                         </CardContent>
                       </CardActionArea>
+                      {c.status === "registration_open" && (isAthlete || isCoach) && (
+                        <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
+                          <Button
+                            variant={isCoach || el?.ok ? "contained" : "outlined"}
+                            component={RouterLink}
+                            to={`/competitions/${c.id}`}
+                            endIcon={<ArrowForwardIcon />}
+                          >
+                            {isCoach ? "Подать заявку за подопечного" : "Подать заявку"}
+                          </Button>
+                        </CardActions>
+                      )}
                     </Card>
                   );
                 })}

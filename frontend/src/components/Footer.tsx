@@ -51,7 +51,7 @@ export function Footer() {
           <Box>
             <Typography sx={{ ...eyebrow, color: BRAND.cyan, mb: 0.5 }}>Регион на карте</Typography>
             <Typography sx={{ color: "rgba(255,255,255,0.6)", fontSize: 14, mb: 2.5 }}>
-              Где занимаются спортивным программированием в Оренбургской области. Наведите на город.
+              Где занимаются спортивным программированием в Оренбургской области. Наведите на муниципалитет.
             </Typography>
             {q.isLoading && <Skeleton variant="rounded" height={320} sx={{ bgcolor: "rgba(255,255,255,0.06)", borderRadius: 4 }} />}
             {q.data && <RegionMap regions={q.data.regions} />}

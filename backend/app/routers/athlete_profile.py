@@ -75,7 +75,7 @@ class AntidopingIn(BaseModel):
     cert_url: str | None = Field(default=None, max_length=500, pattern=r"^https?://\S+$")
 
 
-async def _consent_out(session: AsyncSession, user_id: int) -> ConsentOut:
+async def consent_out(session: AsyncSession, user_id: int) -> ConsentOut:
     consent = await session.scalar(select(Consent).where(Consent.user_id == user_id).order_by(Consent.id.desc()).limit(1))
     if consent is None:
         return ConsentOut(accepted=False, has_scan=False, signed_by=None)
@@ -108,7 +108,7 @@ async def _profile_out(session: AsyncSession, user: User) -> AthleteProfileOut:
         user=UserOut.model_validate(user), age=age_on(user.birth_date, date.today()), municipality=municipality.name if municipality else None,
         guardian_name=profile.guardian_name, guardian_phone=profile.guardian_phone, guardian_email=profile.guardian_email,
         antidoping_course_date=profile.antidoping_course_date, antidoping_cert_url=profile.antidoping_cert_url,
-        enrollments=enrollments, coaches=coaches, consent=await _consent_out(session, user.id),
+        enrollments=enrollments, coaches=coaches, consent=await consent_out(session, user.id),
     )
 
 
@@ -135,7 +135,7 @@ async def set_antidoping(data: AntidopingIn, request: Request, session: Session,
 
 @router.get("/me/consent", response_model=ConsentOut, summary="Состояние согласия на обработку персональных данных")
 async def my_consent(session: Session, current: Authed) -> ConsentOut:
-    return await _consent_out(session, current.user.id)
+    return await consent_out(session, current.user.id)
 
 
 @router.post("/me/consent", response_model=ConsentOut, status_code=status.HTTP_201_CREATED,
@@ -168,4 +168,4 @@ async def upload_consent(file: UploadFile, request: Request, session: Session, c
     await log_action(session, request, user_id=current.user.id, active_role=current.active_role, action="consent.scan_upload",
                      entity_type="consent", entity_id=consent.id, diff={"file": stored.original_name, "size": stored.size})
     await session.commit()
-    return await _consent_out(session, current.user.id)
+    return await consent_out(session, current.user.id)

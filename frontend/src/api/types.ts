@@ -410,3 +410,34 @@ export interface Sanction {
 export interface LinkHistory { old_status: LinkStatus | null; new_status: LinkStatus; changed_by: UserRef; changed_at: string; comment: string | null }
 
 export interface EvskCandidate { athlete_id: number; full_name: string; place: number; rank_id: number; rank: string; current_rank: string | null; kind: RequestKind; request_pending: boolean }
+
+export interface ProfileDiscipline {
+  discipline: DisciplineRef;
+  organization: string | null;
+  training_stage: string | null;
+  since: string;
+  rank: ValidityInfo | null;
+  coach: string | null;
+}
+export interface MyProfile {
+  user: UserOut;
+  full_name: string;
+  age: number;
+  municipality: string | null;
+  roles: Role[];
+  active_role: Role;
+  registered_at: string;
+  consent: { accepted: boolean; has_scan: boolean; signed_by: string | null; is_guardian: boolean };
+  max_bound: boolean;
+  athlete: {
+    disciplines: ProfileDiscipline[];
+    starts: number;
+    prizes: number;
+    antidoping_course_date: string | null;
+    antidoping_cert_url: string | null;
+    guardian_name: string | null;
+    guardian_phone: string | null;
+  } | null;
+  coach: { organization: string | null; athletes: number; disciplines: string[] } | null;
+  judge: { organization: string | null; category: ValidityInfo | null; assignments: number } | null;
+}

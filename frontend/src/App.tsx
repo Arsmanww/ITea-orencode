@@ -13,6 +13,7 @@ const CompetitionPage = lazy(() => import("./pages/CompetitionPage").then((m) =>
 const FederationCabinet = lazy(() => import("./pages/FederationCabinet").then((m) => ({ default: m.FederationCabinet })));
 const JudgeCabinet = lazy(() => import("./pages/JudgeCabinet").then((m) => ({ default: m.JudgeCabinet })));
 const LoginPage = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const PublicHome = lazy(() => import("./pages/PublicHome").then((m) => ({ default: m.PublicHome })));
 const RatingPage = lazy(() => import("./pages/RatingPage").then((m) => ({ default: m.RatingPage })));
 const RegisterPage = lazy(() => import("./pages/RegisterPage").then((m) => ({ default: m.RegisterPage })));
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="coach" element={<RequireAuth><RequireRole roles={["coach"]}><CoachCabinet /></RequireRole></RequireAuth>} />
         <Route path="judge" element={<RequireAuth><RequireRole roles={["judge"]}><JudgeCabinet /></RequireRole></RequireAuth>} />
         <Route path="federation" element={<RequireAuth><RequireRole roles={["federation"]}><FederationCabinet /></RequireRole></RequireAuth>} />
+        <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="registry" element={<RequireAuth><RequireRole roles={["federation"]}><RegistryPage /></RequireRole></RequireAuth>} />
         <Route path="reports" element={<RequireAuth><RequireRole roles={["federation"]}><ReportsPage /></RequireRole></RequireAuth>} />
 

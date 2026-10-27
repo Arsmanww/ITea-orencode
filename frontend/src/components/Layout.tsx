@@ -21,7 +21,7 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 import type { Navigator, Role } from "../api/types";
@@ -29,9 +29,10 @@ import { useAuth } from "../auth/AuthContext";
 import { BRAND, FONT_MONO } from "../theme";
 import { ROLE_HOME, ROLE_LABEL } from "../utils/labels";
 import { BrandMark } from "./brand/BrandMark";
+import { RegionBadge } from "./brand/RegionBadge";
 import { Footer } from "./Footer";
 import { NotificationsBell } from "./NotificationsBell";
-import { useGet } from "./common";
+import { scrollToTop, useGet } from "./common";
 import { useToast } from "./Toast";
 
 interface NavItem { to: string; label: string }
@@ -72,7 +73,7 @@ function LiveStatus({ from }: { from: "lg" | "xl" }) {
   return (
     <Box
       component={RouterLink}
-      to="/calendar"
+      to={open ? "/calendar?status=registration_open" : "/calendar"}
       sx={{
         display: { xs: "none", [from]: "inline-flex" },
         alignItems: "center",
@@ -125,6 +126,14 @@ export function Layout() {
   // в кабинете федерации пунктов больше: подпись логотипа и плашка статуса появляются только на широких экранах
   const crowded = items.length > 5;
   const home = location.pathname === "/";
+
+  // SPA сохраняет позицию прокрутки от прежней страницы — на новой это выглядит как «бросило вниз».
+  // Повтор после отрисовки нужен для страниц, которые догружаются лениво уже после смены маршрута.
+  useEffect(() => {
+    scrollToTop();
+    const frame = requestAnimationFrame(scrollToTop);
+    return () => cancelAnimationFrame(frame);
+  }, [location.pathname]);
 
   const onSwitch = async (role: Role) => {
     try {
@@ -212,13 +221,22 @@ export function Layout() {
           )}
           {mobile && <Box sx={{ flexGrow: 1 }} />}
 
+          {!crowded && <RegionBadge />}
           <LiveStatus from={crowded ? "xl" : "lg"} />
 
           {me ? (
             <Stack direction="row" spacing={1.5} alignItems="center">
               <NotificationsBell />
               {!mobile && (
-                <Stack direction="row" spacing={1} alignItems="center">
+                <Stack
+                  component={RouterLink}
+                  to="/profile"
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  title="Мой профиль"
+                  sx={{ color: "#fff", textDecoration: "none", px: 1, py: 0.5, borderRadius: 999, "&:hover": { bgcolor: "rgba(255,255,255,0.1)" } }}
+                >
                   <Avatar sx={{ width: 32, height: 32, bgcolor: ROLE_COLOR[me.active_role], fontSize: 13, fontWeight: 700 }}>{initials(me.user.last_name, me.user.first_name)}</Avatar>
                   <Box sx={{ lineHeight: 1.15, maxWidth: 168, display: { md: "none", lg: "block" } }}>
                     <Typography noWrap sx={{ fontSize: 13.5, fontWeight: 700 }}>
@@ -260,10 +278,13 @@ export function Layout() {
           </Stack>
           {me && (
             <Box sx={{ px: 2.5, pb: 2.5 }}>
-              <Typography fontWeight={700}>
-                {me.user.last_name} {me.user.first_name}
-              </Typography>
-              <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, opacity: 0.65, mb: 1.5 }}>{me.user.email}</Typography>
+              <Box component={RouterLink} to="/profile" onClick={() => setDrawer(false)} sx={{ color: "#fff", textDecoration: "none", display: "block" }}>
+                <Typography fontWeight={700}>
+                  {me.user.last_name} {me.user.first_name}
+                </Typography>
+                <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, opacity: 0.65 }}>{me.user.email}</Typography>
+                <Typography sx={{ fontSize: 12.5, color: BRAND.cyan, mb: 1.5 }}>Мой профиль →</Typography>
+              </Box>
               {me.roles.length > 1 ? <Box>{roleSelect}</Box> : <Chip size="small" label={`Роль: ${ROLE_LABEL[me.active_role]}`} sx={{ bgcolor: ROLE_COLOR[me.active_role], color: "#fff" }} />}
             </Box>
           )}

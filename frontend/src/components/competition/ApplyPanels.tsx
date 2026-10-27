@@ -159,10 +159,21 @@ export function CoachApplyPanel({ comp }: { comp: Competition }) {
       <Async q={wards}>
         {(all) => {
           const mine = all.filter((w) => w.discipline.id === comp.discipline.id);
+          const closed = comp.status !== "registration_open";
           const chosen = mine.find((w) => String(w.athlete.id) === athleteId);
           const fit = chosen ? ageFits(comp.age_groups, chosen.birth_date, comp.start_date) : null;
           return (
-            <>
+            <Stack spacing={2}>
+              {closed && (
+                <Alert severity="info">
+                  Приём заявок сейчас не ведётся{comp.status === "finished" ? ": соревнование завершено" : ""}. Кнопка подачи появится, когда федерация откроет регистрацию.
+                </Alert>
+              )}
+              {!closed && mine.length === 0 && (
+                <Alert severity="warning">
+                  У вас нет подтверждённых подопечных по дисциплине «{comp.discipline.name}» — привяжите спортсмена в кабинете, тогда сможете подать за него заявку.
+                </Alert>
+              )}
               <Async q={apps}>{(list) => <ApplicationsTable apps={list} showAthlete />}</Async>
               <FormDialog
                 open={open}
@@ -185,7 +196,7 @@ export function CoachApplyPanel({ comp }: { comp: Competition }) {
                 {fit && <Check ok={fit.ok}>{`Возраст на дату старта: ${fit.age} лет; группы: ${comp.age_groups.map((g) => `${g.min_age}–${g.max_age}`).join(", ")}`}</Check>}
                 {comp.is_team && <TextField label="Название команды" value={team} onChange={(e) => setTeam(e.target.value)} required />}
               </FormDialog>
-            </>
+            </Stack>
           );
         }}
       </Async>

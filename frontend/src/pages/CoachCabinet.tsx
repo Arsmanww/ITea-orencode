@@ -12,7 +12,7 @@ import { capitalize } from "../components/home/parts";
 import { RankRequestDialog } from "../components/RankRequestDialog";
 import { NotificationChannelsCard } from "../components/NotificationChannelsCard";
 import { useToast } from "../components/Toast";
-import { Async, DownloadButton, EmptyState, PageTitle, ReqStatusChip, Section, useGet, useInvalidate } from "../components/common";
+import { Async, DownloadButton, EmptyState, PageTitle, ReqStatusChip, Section, useGet, useInvalidate, useTabs } from "../components/common";
 import { daysText, fmtDate, fmtPeriod } from "../utils/format";
 import { KIND_LABEL } from "../utils/labels";
 
@@ -232,17 +232,17 @@ function ExpiringTab() {
 }
 
 export function CoachCabinet() {
-  const [tab, setTab] = useState(0);
+  const { tab, select, onChange } = useTabs();
   const expiring = useGet<Expiring>("/ranks/expiring", { days: 60 });
   return (
     <Box>
       <PageTitle title="Кабинет тренера" subtitle="Подопечные, заявки на соревнования и разряды" />
       {(expiring.data?.total ?? 0) > 0 && (
-        <Alert severity="warning" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={() => setTab(2)}>Показать</Button>}>
+        <Alert severity="warning" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={() => select(2)}>Показать</Button>}>
           У подопечных истекают разряды в ближайшие 60 дней: {expiring.data?.total}. Подайте заявки на подтверждение заранее.
         </Alert>
       )}
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+      <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
         <Tab label="Подопечные" />
         <Tab label="Заявки на разряды" />
         <Tab label="Сроки" />

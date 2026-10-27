@@ -2,7 +2,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { Box, Button, Chip, Link, Stack, Tab, Tabs, Typography } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
@@ -10,7 +10,7 @@ import type { Competition } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { AthleteApplyPanel, CoachApplyPanel } from "../components/competition/ApplyPanels";
 import { JudgesPanel, ModerationPanel, ProtocolPanel, ResultsPanel, StatusActions } from "../components/competition/FederationPanels";
-import { Async, CompStatusChip, DownloadButton, FormatChip, KeyValue, Section, useGet, useInvalidate } from "../components/common";
+import { Async, CompStatusChip, DownloadButton, FormatChip, KeyValue, Section, useGet, useInvalidate, useTabs } from "../components/common";
 import { useToast } from "../components/Toast";
 import { fmtDateTime, fmtPeriod } from "../utils/format";
 import { LEVEL_LABEL, PLAN_LABEL, STAGE_FORMAT_LABEL, TIER_LABEL } from "../utils/labels";
@@ -55,7 +55,7 @@ export function CompetitionPage() {
   const { id } = useParams();
   const { me } = useAuth();
   const q = useGet<Competition>(`/competitions/${id}`);
-  const [tab, setTab] = useState(0);
+  const { tab, onChange } = useTabs();
   const role = me?.active_role;
 
   return (
@@ -116,7 +116,7 @@ export function CompetitionPage() {
             {role === "federation" ? (
               <>
                 <StatusActions comp={c} />
-                <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+                <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
                   <Tab label="Заявки" />
                   <Tab label="Судейская коллегия" />
                   <Tab label="Результаты и протокол" />

@@ -30,7 +30,7 @@ import { LinkActions, LinkStatusChip } from "../components/LinkControls";
 import { RankRequestDialog } from "../components/RankRequestDialog";
 import { useToast } from "../components/Toast";
 import { NotificationChannelsCard } from "../components/NotificationChannelsCard";
-import { Async, DateField, DownloadButton, EmptyState, KeyValue, PageTitle, ReqStatusChip, Section, ValidityAlert, useGet, useInvalidate } from "../components/common";
+import { Async, DateField, DownloadButton, EmptyState, KeyValue, PageTitle, ReqStatusChip, Section, ValidityAlert, useGet, useInvalidate, useTabs } from "../components/common";
 import { daysText, fmtDate, fmtNum, fmtTime, todayIso } from "../utils/format";
 import { KIND_LABEL, LEVEL_LABEL, RESULT_STATUS_LABEL, STAGE_LABEL } from "../utils/labels";
 
@@ -367,7 +367,7 @@ function HistoryTab() {
 }
 
 export function AthleteCabinet() {
-  const [tab, setTab] = useState(0);
+  const { tab, onChange } = useTabs();
   const profile = useGet<AthleteProfile>("/athletes/me/profile");
   const ranks = useGet<MyRank[]>("/athletes/me/ranks");
   const incoming = useGet<CoachLink[]>("/athlete/coach-requests", { status: "pending" });
@@ -377,7 +377,7 @@ export function AthleteCabinet() {
     <Box>
       <PageTitle title="Кабинет спортсмена" subtitle={profile.data ? `${profile.data.user.last_name} ${profile.data.user.first_name}, ${profile.data.age} лет` : undefined} />
       {warnings.map((r) => <ValidityAlert key={r.discipline.id} info={r.rank} what={`Разряд (${r.discipline.name.replace("Программирование ", "")})`} />)}
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+      <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
         <Tab label={<Badge color="secondary" badgeContent={incoming.data?.length ?? 0} sx={{ "& .MuiBadge-badge": { right: -14 } }}>Профиль</Badge>} />
         <Tab label="Разряды" />
         <Tab label="История выступлений" />

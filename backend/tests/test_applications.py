@@ -1,10 +1,11 @@
 """С3: заявка проверяется на сервере по возрасту и дисциплине."""
 
-from datetime import date
+from datetime import date, timedelta
 
 import pytest_asyncio
+from sqlalchemy import select
 
-from app.models import CoachAthleteLink, CoachProfile
+from app.models import AthleteEnrollment, CoachAthleteLink, CoachProfile
 from app.models.enums import LinkStatus, RoleCode
 from tests.helpers import auth, make_age_group, make_athlete, make_competition, make_discipline, make_user
 
@@ -81,3 +82,24 @@ async def test_athlete_with_coach_cannot_apply_but_coach_can(client, session, se
     assert by_coach.status_code == 201, by_coach.text
     assert by_coach.json()["submitted_by_role"] == "coach"
     assert by_coach.json()["coach_id"] == coach.id
+
+
+async def test_athlete_enrolled_after_start_can_apply(client, session, setup):
+    """Спортсмен зарегистрировался, когда соревнование уже шло: приём заявок открыт — значит, заявку принимаем."""
+    started = await make_competition(session, setup["algo"], [await make_age_group(session, "14–17 лет", 14, 17)],
+                                     setup["admin"], start=date.today() - timedelta(days=1))
+    newcomer = await make_athlete(session, setup["algo"], birth=born(16), enrolled_since=date.today())
+
+    r = await apply(client, started.id, newcomer)
+    assert r.status_code == 201, r.json()
+
+
+async def test_finished_enrollment_blocks_application(client, session, setup):
+    """Занятия по дисциплине закончились — к заявке не допускаем."""
+    quit_athlete = await make_athlete(session, setup["algo"], birth=born(16))
+    enrollment = await session.scalar(select(AthleteEnrollment).where(AthleteEnrollment.athlete_id == quit_athlete.id))
+    enrollment.end_date = date.today() - timedelta(days=1)
+    await session.flush()
+
+    r = await apply(client, setup["comp"].id, quit_athlete)
+    assert r.status_code == 422 and "не занимается дисциплиной" in r.json()["detail"]

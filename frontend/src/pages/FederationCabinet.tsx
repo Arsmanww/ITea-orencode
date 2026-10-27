@@ -9,7 +9,7 @@ import type { CategoryRequest, Dashboard, Expiring, QueueItem, RankRequest } fro
 import { NotificationChannelsCard } from "../components/NotificationChannelsCard";
 import { AuditLogSection, CompetitionTypesSection, SanctionsSection } from "../components/federation/FederationTools";
 import { useToast } from "../components/Toast";
-import { Async, CompStatusChip, DateField, EmptyState, FormDialog, PageTitle, Section, useGet, useInvalidate } from "../components/common";
+import { Async, CompStatusChip, DateField, EmptyState, FormDialog, PageTitle, Section, useGet, useInvalidate, useTabs } from "../components/common";
 import { BRAND } from "../theme";
 import { daysText, fmtDate, fmtDateTime, todayIso } from "../utils/format";
 import { KIND_LABEL } from "../utils/labels";
@@ -317,13 +317,13 @@ function ExpiringQueue() {
 }
 
 export function FederationCabinet() {
-  const [tab, setTab] = useState(0);
+  const { tab, select, onChange } = useTabs();
   const [target, setTarget] = useState<DecisionTarget | null>(null);
   return (
     <Box>
       <PageTitle title="Кабинет федерации" subtitle="Показатели, заявки и контроль сроков" />
-      <DashboardBlock go={setTab} />
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+      <DashboardBlock go={select} />
+      <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
         <Tab label="Заявки на соревнования" />
         <Tab label="Заявки на разряды" />
         <Tab label="Заявки судей" />

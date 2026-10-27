@@ -31,7 +31,7 @@ import { api } from "../api/client";
 import type { AgeGroup, RatingItem, RatingOut, Ref, Season, Squad } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { useToast } from "../components/Toast";
-import { Async, DownloadButton, EmptyState, FormDialog, PageTitle, Section, useGet, useInvalidate } from "../components/common";
+import { Async, DownloadButton, EmptyState, FormDialog, PageTitle, Section, useGet, useInvalidate, useTabs } from "../components/common";
 import { fmtDate, fmtNum } from "../utils/format";
 import { TIER_LABEL } from "../utils/labels";
 
@@ -293,18 +293,18 @@ function SquadsTab() {
 
 export function RatingPage() {
   const { me } = useAuth();
-  const [tab, setTab] = useState(0);
+  const { tab, select, onChange } = useTabs();
   const isFed = me?.active_role === "federation";
   return (
     <Box>
       <PageTitle title="Рейтинг спортсменов региона" subtitle="Очки по уровню соревнования, коэффициент стабильности и прозрачный расчёт по каждому спортсмену" />
       {isFed && (
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
+        <Tabs value={tab} onChange={onChange} sx={{ mb: 2 }}>
           <Tab label="Рейтинг" />
           <Tab label="Сборные команды" />
         </Tabs>
       )}
-      {tab === 0 && <RatingTab onSquadCreated={() => setTab(1)} />}
+      {tab === 0 && <RatingTab onSquadCreated={() => select(1)} />}
       {tab === 1 && isFed && <SquadsTab />}
     </Box>
   );

@@ -17,7 +17,7 @@ import {
   type TextFieldProps,
 } from "@mui/material";
 import { useQuery, useQueryClient, type QueryClient, type UseQueryResult } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 
 import { ApiError, api, download } from "../api/client";
 import type { ApplicationStatus, CompetitionStatus, RequestStatus, ValidityInfo } from "../api/types";
@@ -53,6 +53,21 @@ export function invalidate(qc: QueryClient, ...paths: string[]) {
 export function useInvalidate() {
   const qc = useQueryClient();
   return (...paths: string[]) => invalidate(qc, ...paths);
+}
+
+/** Возвращает пользователя к началу страницы: контент сменился, старая позиция прокрутки бессмысленна. */
+export function scrollToTop() {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}
+
+/** Состояние вкладок: при переключении страница всегда показывается с начала. */
+export function useTabs(initial = 0) {
+  const [tab, setTab] = useState(initial);
+  const select = useCallback((value: number) => {
+    setTab(value);
+    scrollToTop();
+  }, []);
+  return { tab, select, onChange: useCallback((_: unknown, value: number) => select(value), [select]) };
 }
 
 export function Loading({ label = "Загрузка…" }: { label?: string }) {

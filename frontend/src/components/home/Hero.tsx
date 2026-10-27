@@ -4,6 +4,7 @@ import { Link as RouterLink } from "react-router-dom";
 
 import type { Competition, Navigator } from "../../api/types";
 import { useAuth } from "../../auth/AuthContext";
+import { Reveal } from "../Reveal";
 import { useCountUp } from "../../hooks/useCountUp";
 import { useCountdown } from "../../hooks/useCountdown";
 import { BRAND, FONT_MONO } from "../../theme";
@@ -122,7 +123,7 @@ export function Hero({ nav }: { nav: Navigator }) {
     >
       <Container maxWidth="lg" sx={{ position: "relative", py: { xs: 7, md: 12 } }}>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "minmax(0, 7fr) minmax(0, 5fr)" }, gap: { xs: 6, md: 8 }, alignItems: "center" }}>
-          <Box>
+          <Reveal shift={16}>
             <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1, px: 1.75, py: 0.75, mb: 3, borderRadius: 999, border: "1px solid rgba(255,255,255,0.16)", bgcolor: "rgba(255,255,255,0.05)", fontFamily: FONT_MONO, fontSize: 12, letterSpacing: "0.06em", color: "rgba(255,255,255,0.8)" }}>
               <Box component="span" sx={{ color: BRAND.cyan }}>{"{ }"}</Box> ФСП · Оренбургская область
             </Box>
@@ -159,9 +160,13 @@ export function Hero({ nav }: { nav: Navigator }) {
               <Counter value={nav.stats.organizations} label="организаций" />
               <Counter value={nav.stats.competitions_this_year} label="турниров в году" />
             </Stack>
-          </Box>
+          </Reveal>
 
-          {next && <NextEventCard comp={next} />}
+          {next && (
+            <Reveal shift={16} delay={160}>
+              <NextEventCard comp={next} />
+            </Reveal>
+          )}
         </Box>
       </Container>
     </Box>

@@ -35,6 +35,22 @@ def ensure_registration_open(comp: Competition) -> None:
         raise HTTPException(status.HTTP_409_CONFLICT, "Приём заявок завершён")
 
 
+def enrollment_conditions(comp: Competition, today: date):
+    """Условия «спортсмен занимается дисциплиной соревнования».
+
+    Занятия должны идти на день подачи заявки и не заканчиваться раньше старта соревнования.
+    Требовать, чтобы они начались до даты старта, нельзя: заявки принимают, пока открыта
+    регистрация, поэтому спортсмен, зарегистрировавшийся уже после начала соревнования,
+    тоже имеет право заявиться.
+    """
+    until = max(today, comp.start_date)
+    return (
+        AthleteEnrollment.discipline_id == comp.discipline_id,
+        AthleteEnrollment.start_date <= today,
+        or_(AthleteEnrollment.end_date.is_(None), AthleteEnrollment.end_date >= until),
+    )
+
+
 async def active_link(session: AsyncSession, athlete_id: int, discipline_id: int) -> CoachAthleteLink | None:
     return await session.scalar(
         select(CoachAthleteLink).where(
@@ -49,12 +65,9 @@ async def validate_participation(session: AsyncSession, comp: Competition, athle
     """Проверки допуска: дисциплина, возрастная группа, санкции, дубль заявки. Возвращает возраст на дату старта."""
     discipline = await session.get(Discipline, comp.discipline_id)
     enrolled = await session.scalar(
-        select(AthleteEnrollment.id).where(
-            AthleteEnrollment.athlete_id == athlete_id,
-            AthleteEnrollment.discipline_id == comp.discipline_id,
-            AthleteEnrollment.start_date <= comp.start_date,
-            or_(AthleteEnrollment.end_date.is_(None), AthleteEnrollment.end_date >= comp.start_date),
-        ).limit(1)
+        select(AthleteEnrollment.id)
+        .where(AthleteEnrollment.athlete_id == athlete_id, *enrollment_conditions(comp, date.today()))
+        .limit(1)
     )
     if enrolled is None:
         raise unprocessable(f"Дисциплина не совпадает: спортсмен не занимается дисциплиной «{discipline.name}»")
