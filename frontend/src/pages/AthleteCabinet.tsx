@@ -130,7 +130,7 @@ function AntidopingAndConsent({ p }: { p: AthleteProfile }) {
           {p.consent.accepted ? (
             <Alert severity={p.consent.has_scan ? "success" : "info"}>
               Согласие принято{p.consent.signed_by ? ` (${p.consent.is_guardian ? "законный представитель: " : ""}${p.consent.signed_by})` : ""}.{" "}
-              {p.consent.has_scan ? "Скан подписанного документа загружен." : "Загрузите скан подписанного согласия — федерация хранит его в бумажном виде."}
+              {p.consent.has_scan ? "Скан подписанного документа загружен." : "Загрузите скан подписанного согласия – федерация хранит его в бумажном виде."}
             </Alert>
           ) : (
             <Alert severity="warning">Согласие не найдено. Загрузите скан подписанного документа.</Alert>
@@ -176,7 +176,7 @@ function ProfileTab() {
                         {e.organization ?? "Без организации"} · с {fmtDate(e.start_date)}{e.training_stage ? ` · ${STAGE_LABEL[e.training_stage] ?? e.training_stage}` : ""}
                       </Typography>
                     </Box>
-                    {coach ? <Chip color="primary" variant="outlined" label={`Тренер: ${coach.coach.full_name}`} /> : <Chip variant="outlined" label="Без тренера — заявки подаёте сами" />}
+                    {coach ? <Chip color="primary" variant="outlined" label={`Тренер: ${coach.coach.full_name}`} /> : <Chip variant="outlined" label="Без тренера – заявки подаёте сами" />}
                   </Stack>
                 );
               })}
@@ -205,7 +205,7 @@ function RanksTab({ profile }: { profile: AthleteProfile }) {
         title="Мои разряды"
         actions={<Button variant="contained" onClick={() => setOpen(true)} disabled={allCoached}>Подать на разряд</Button>}
       >
-        {allCoached && <Alert severity="info" sx={{ mb: 2 }}>У вас есть тренеры по всем дисциплинам — заявки на разряд подают они.</Alert>}
+        {allCoached && <Alert severity="info" sx={{ mb: 2 }}>У вас есть тренеры по всем дисциплинам – заявки на разряд подают они.</Alert>}
         <Async q={ranks}>
           {(list) =>
             list.length === 0 ? (
@@ -252,7 +252,7 @@ function RanksTab({ profile }: { profile: AthleteProfile }) {
                         <TableCell sx={{ maxWidth: 260 }}>{r.competition.name}, место {r.result.place}{r.evsk_match === true && <Chip size="small" color="success" label="ЕВСК" sx={{ ml: 1 }} />}</TableCell>
                         <TableCell>{r.submitted_by_role === "coach" ? "тренер" : "я"}</TableCell>
                         <TableCell><ReqStatusChip status={r.status} /></TableCell>
-                        <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number} от ${fmtDate(r.order_date)}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "—"}</TableCell>
+                        <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number} от ${fmtDate(r.order_date)}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "–"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

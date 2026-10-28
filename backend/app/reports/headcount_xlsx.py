@@ -40,7 +40,7 @@ def _header(ws: Worksheet, row: int, headers: list[str]) -> None:
 
 
 def _delta(first: int, last: int) -> tuple[int, float | str]:
-    return last - first, (round((last - first) / first * 100, 1) if first else "—")
+    return last - first, (round((last - first) / first * 100, 1) if first else "–")
 
 
 def _dynamics_table(ws: Worksheet, start: int, first_header: str, years: list[int], rows: list[Row],

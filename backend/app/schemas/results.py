@@ -69,7 +69,7 @@ class ProtocolOut(BaseModel):
     status: ProtocolStatus
     published_at: AwareDatetime | None
     snapshot: dict[str, Any]
-    evsk: list[EvskCandidate] = Field(default_factory=list, description="Подсветка ЕВСК — только для федерации")
+    evsk: list[EvskCandidate] = Field(default_factory=list, description="Подсветка ЕВСК – только для федерации")
 
 
 class HistoryItem(BaseModel):

@@ -7,7 +7,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { api } from "../api/client";
 import type { CategoryRequest, Dashboard, Expiring, QueueItem, RankRequest } from "../api/types";
 import { NotificationChannelsCard } from "../components/NotificationChannelsCard";
-import { AuditLogSection, CompetitionTypesSection, SanctionsSection } from "../components/federation/FederationTools";
+import { AuditLogSection, CompetitionTypesSection, SanctionsSection, StaffSection } from "../components/federation/FederationTools";
 import { useToast } from "../components/Toast";
 import { Async, CompStatusChip, DateField, EmptyState, FormDialog, PageTitle, Section, useGet, useInvalidate, useTabs } from "../components/common";
 import { BRAND } from "../theme";
@@ -27,8 +27,11 @@ function Metric({ value, label }: { value: number; label: string }) {
 
 function Attention({ value, label, onClick, hot }: { value: number; label: string; onClick: () => void; hot?: boolean }) {
   return (
-    <Card sx={{ borderColor: value && hot ? BRAND.red : undefined, bgcolor: value && hot ? "#FFF3F3" : undefined }}>
-      <CardActionArea onClick={onClick}>
+    <Card sx={{ height: "100%", borderColor: value && hot ? BRAND.red : undefined, bgcolor: value && hot ? "#FFF3F3" : undefined }}>
+      {/* height: 100% – карточки в гриде растягиваются по самой высокой (двустрочный текст), а зона
+          подсветки CardActionArea по умолчанию подстраивается под свой контент, а не под растянутую
+          карточку: без этого внизу у однострочных карточек остаётся неподсвеченная полоска. */}
+      <CardActionArea onClick={onClick} sx={{ height: "100%" }}>
         <CardContent>
           <Typography sx={{ fontSize: 30, fontWeight: 800, color: value && hot ? BRAND.red : BRAND.blueDark, lineHeight: 1 }}>{value}</Typography>
           <Typography variant="body2" sx={{ mt: 0.5 }}>{label}</Typography>
@@ -175,7 +178,7 @@ function DecisionDialog({ target, onClose }: { target: DecisionTarget | null; on
     <FormDialog open={target !== null} title={target?.title ?? ""} onClose={onClose} onSubmit={() => { setError(null); send.mutate(); }}
       submitLabel={decision === "approved" ? "Утвердить" : "Отклонить"} busy={send.isPending} error={error}
       submitDisabled={decision === "approved" ? !orderNumber.trim() : !comment.trim()}>
-      <ToggleButtonGroup exclusive fullWidth value={decision} onChange={(_, v) => v && setDecision(v)}>
+      <ToggleButtonGroup exclusive fullWidth value={decision} onChange={(_, v) => { if (v) { setDecision(v); setComment(""); } }}>
         <ToggleButton value="approved" color="success">Утвердить</ToggleButton>
         <ToggleButton value="rejected" color="error">Отклонить</ToggleButton>
       </ToggleButtonGroup>
@@ -183,7 +186,7 @@ function DecisionDialog({ target, onClose }: { target: DecisionTarget | null; on
         <>
           <TextField label="Номер приказа" value={orderNumber} onChange={(e) => setOrderNumber(e.target.value)} required />
           <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
-            <DateField label="Дата приказа" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} helperText="По умолчанию — сегодня" slotProps={{ htmlInput: { max: todayIso() } }} />
+            <DateField label="Дата приказа" value={orderDate} onChange={(e) => setOrderDate(e.target.value)} helperText="По умолчанию – сегодня" slotProps={{ htmlInput: { max: todayIso() } }} />
             <DateField label="Действует до" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} helperText={`По умолчанию: ${target?.defaultMonths}`} />
           </Box>
           <TextField label="Комментарий (необязательно)" value={comment} onChange={(e) => setComment(e.target.value)} />
@@ -248,7 +251,7 @@ function JudgeQueue({ onDecide }: { onDecide: (t: DecisionTarget) => void }) {
                     <TableRow key={r.id}>
                       <TableCell sx={{ fontWeight: 600 }}>{r.judge.full_name}</TableCell>
                       <TableCell>{KIND_LABEL[r.kind]}: <b>{r.category.name}</b></TableCell>
-                      <TableCell>{r.comment ?? "—"}</TableCell>
+                      <TableCell>{r.comment ?? "–"}</TableCell>
                       <TableCell>{fmtDate(r.created_at)}</TableCell>
                       <TableCell align="right"><Button size="small" variant="contained" onClick={() => onDecide({ id: r.id, kind: "judge", title: `${r.judge.full_name}: ${r.category.name}`, defaultMonths: "дата приказа + 48 месяцев" })}>Рассмотреть</Button></TableCell>
                     </TableRow>
@@ -331,6 +334,7 @@ export function FederationCabinet() {
         <Tab label="Дисквалификации" />
         <Tab label="Журнал действий" />
         <Tab label="Справочники" />
+        <Tab label="Тренеры и судьи" />
       </Tabs>
       {tab === 0 && <ApplicationsQueue />}
       {tab === 1 && <RankQueue onDecide={setTarget} />}
@@ -339,9 +343,10 @@ export function FederationCabinet() {
       {tab === 4 && <SanctionsSection />}
       {tab === 5 && <AuditLogSection />}
       {tab === 6 && <CompetitionTypesSection />}
+      {tab === 7 && <StaffSection />}
       <DecisionDialog key={target ? `${target.kind}-${target.id}` : "none"} target={target} onClose={() => setTarget(null)} />
       <Alert severity="info" sx={{ mb: 3 }} action={<Button color="inherit" size="small" component={RouterLink} to="/registry">Открыть реестр</Button>}>
-        Спортсмены, тренеры, судьи и организации — в «Реестре», рейтинг и сборная — в «Рейтинге», выгрузки — в «Отчётах».
+        Спортсмены, тренеры, судьи и организации – в «Реестре», рейтинг и сборная – в «Рейтинге», выгрузки – в «Отчётах».
       </Alert>
       <NotificationChannelsCard />
     </Box>

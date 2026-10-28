@@ -37,8 +37,8 @@ def build_protocol_docx(info: dict[str, Any]) -> bytes:
     para(doc, comp["title"], bold=True, size=16, align="center", after=18)
     para(doc, f"Вид спорта: спортивное программирование", size=12, align="center", after=2)
     para(doc, f"Дисциплина: {comp['discipline']}", size=12, align="center", after=2)
-    para(doc, f"Дата проведения: {fmt_date(comp['start_date'])} — {fmt_date(comp['end_date'])}", size=12, align="center", after=2)
-    para(doc, f"Место проведения: {comp['location'] or '—'}", size=12, align="center", after=24)
+    para(doc, f"Дата проведения: {fmt_date(comp['start_date'])} – {fmt_date(comp['end_date'])}", size=12, align="center", after=2)
+    para(doc, f"Место проведения: {comp['location'] or '–'}", size=12, align="center", after=24)
 
     plan = PLAN_LABELS[comp["plan"]] + (f", № {comp['plan_number']}" if comp["plan_number"] else "")
     details = [
@@ -54,7 +54,7 @@ def build_protocol_docx(info: dict[str, Any]) -> bytes:
         para(doc, "Этапы соревнования", bold=True, size=12, before=14, after=4)
         add_table(doc, ["№", "Этап", "Формат", "Даты", "Место / ссылка"],
                   [[str(s["order_no"]), s["name"], FORMAT_LABELS[s["format"]],
-                    f"{s['starts_at']:%d.%m.%Y %H:%M} — {s['ends_at']:%d.%m.%Y %H:%M}", s["place_or_url"] or "—"] for s in comp["stages"]],
+                    f"{s['starts_at']:%d.%m.%Y %H:%M} – {s['ends_at']:%d.%m.%Y %H:%M}", s["place_or_url"] or "–"] for s in comp["stages"]],
                   [1.0, 5.2, 2.0, 4.8, 3.5], font_size=9, center_cols={0, 2})
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
@@ -81,23 +81,23 @@ def build_protocol_docx(info: dict[str, Any]) -> bytes:
 
     table_rows = []
     for r in rows:
-        line = [str(r["place"]) if r["place"] else "—", r["full_name"], fmt_date(_date(r["birth_date"]))]
+        line = [str(r["place"]) if r["place"] else "–", r["full_name"], fmt_date(_date(r["birth_date"]))]
         if has_team:
-            line.append(r.get("team") or "—")
-        line.append(fmt_num(r["score"]) if r["score"] is not None else "—")
+            line.append(r.get("team") or "–")
+        line.append(fmt_num(r["score"]) if r["score"] is not None else "–")
         if has_tasks:
-            line.append(str(r["tasks_solved"]) if r["tasks_solved"] is not None else "—")
-        line += [fmt_time(r["time_seconds"]) or "—", STATUS_LABELS.get(r["status"], "") or (r.get("note") or "")]
+            line.append(str(r["tasks_solved"]) if r["tasks_solved"] is not None else "–")
+        line += [fmt_time(r["time_seconds"]) or "–", STATUS_LABELS.get(r["status"], "") or (r.get("note") or "")]
         table_rows.append(line)
     add_table(doc, headers, table_rows, widths, font_size=9.5, center_cols={0, 2} | set(range(3 + has_team, len(headers) - 1)))
     para(doc, f"Всего участников: {len(rows)}. В протокол включены все участники с одобренными заявками, "
-              f"места присвоены по баллам, при равенстве — по числу решённых задач и времени.", italic=True, size=10, before=6)
+              f"места присвоены по баллам, при равенстве – по числу решённых задач и времени.", italic=True, size=10, before=6)
 
     # --- судейская коллегия ---
     para(doc, "Судейская коллегия", bold=True, size=14, align="center", before=16, after=6)
     if judges:
         add_table(doc, ["№", "Судейская должность", "Фамилия, имя, отчество", "Судейская категория"],
-                  [[str(i), j["position"], j["name"], j["category"] or "—"] for i, j in enumerate(judges, start=1)],
+                  [[str(i), j["position"], j["name"], j["category"] or "–"] for i, j in enumerate(judges, start=1)],
                   [1.0, 5.0, 6.5, 4.5], font_size=10, center_cols={0})
     else:
         para(doc, "Судейская коллегия на соревнование не назначена.", italic=True)

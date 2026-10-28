@@ -35,7 +35,7 @@ def add_months(d: date, months: int) -> date:
 
 
 async def current_rank(session: AsyncSession, athlete_id: int, discipline_id: int) -> tuple[RankAssignment, Rank] | None:
-    """Последнее присвоение по дисциплине (в том числе истёкшее — разряд остаётся достигнутым)."""
+    """Последнее присвоение по дисциплине (в том числе истёкшее – разряд остаётся достигнутым)."""
     row = (await session.execute(
         select(RankAssignment, Rank).join(Rank, Rank.id == RankAssignment.rank_id)
         .where(RankAssignment.athlete_id == athlete_id, RankAssignment.discipline_id == discipline_id)
@@ -45,7 +45,7 @@ async def current_rank(session: AsyncSession, athlete_id: int, discipline_id: in
 
 
 async def evsk_match(session: AsyncSession, rank: Rank, comp: Competition, result: Result) -> bool | None:
-    """Подсказка: может ли результат соответствовать требованиям ЕВСК (None — требования не заданы)."""
+    """Подсказка: может ли результат соответствовать требованиям ЕВСК (None – требования не заданы)."""
     reqs = (await session.scalars(
         select(RankRequirement).where(
             RankRequirement.rank_id == rank.id, RankRequirement.level == comp.level,

@@ -70,7 +70,7 @@ async def build_history(
 
 
 async def ensure_can_view_athlete(session: AsyncSession, current: CurrentUser, athlete_id: int) -> None:
-    """Спортсмен видит себя, тренер — активных подопечных, федерация — всех."""
+    """Спортсмен видит себя, тренер – активных подопечных, федерация – всех."""
     if current.active_role == RoleCode.ATHLETE and athlete_id != current.user.id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Спортсмен видит только свои данные")
     if current.active_role == RoleCode.COACH:
@@ -98,7 +98,7 @@ async def my_history(
 
 
 @router.get("/{athlete_id}/history", response_model=HistoryOut,
-            summary="История выступлений: федерация — любого, тренер — подопечных, спортсмен — свою")
+            summary="История выступлений: федерация – любого, тренер – подопечных, спортсмен – свою")
 async def athlete_history(
     athlete_id: int,
     session: Session,

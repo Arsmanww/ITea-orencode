@@ -41,7 +41,7 @@ function ApplicationsTable({ apps, showAthlete }: { apps: Application[]; showAth
               <TableCell>{a.age_on_start}</TableCell>
               <TableCell>{fmtDateTime(a.created_at)}</TableCell>
               <TableCell><AppStatusChip status={a.status} /></TableCell>
-              <TableCell>{a.moderation_comment ?? "—"}</TableCell>
+              <TableCell>{a.moderation_comment ?? "–"}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -82,10 +82,10 @@ export function AthleteApplyPanel({ comp }: { comp: Competition }) {
               return (
                 <Stack spacing={2}>
                   {list.length > 0 && <ApplicationsTable apps={list} showAthlete={false} />}
-                  {active?.status === "approved" && <Alert severity="success">Заявка одобрена — вы допущены к участию.</Alert>}
+                  {active?.status === "approved" && <Alert severity="success">Заявка одобрена – вы допущены к участию.</Alert>}
                   {active?.status === "pending" && <Alert severity="info">Заявка на модерации. Решение придёт в уведомлении.</Alert>}
                   {!active && coach && comp.status === "registration_open" && (
-                    <Alert severity="info">По этой дисциплине вас ведёт тренер {coach.coach.full_name} — заявку подаёт он. Обратитесь к тренеру.</Alert>
+                    <Alert severity="info">По этой дисциплине вас ведёт тренер {coach.coach.full_name} – заявку подаёт он. Обратитесь к тренеру.</Alert>
                   )}
                   {!active && comp.status !== "registration_open" && <Alert severity="info">Приём заявок сейчас не ведётся.</Alert>}
                   {canApply && (
@@ -171,7 +171,7 @@ export function CoachApplyPanel({ comp }: { comp: Competition }) {
               )}
               {!closed && mine.length === 0 && (
                 <Alert severity="warning">
-                  У вас нет подтверждённых подопечных по дисциплине «{comp.discipline.name}» — привяжите спортсмена в кабинете, тогда сможете подать за него заявку.
+                  У вас нет подтверждённых подопечных по дисциплине «{comp.discipline.name}» – привяжите спортсмена в кабинете, тогда сможете подать за него заявку.
                 </Alert>
               )}
               <Async q={apps}>{(list) => <ApplicationsTable apps={list} showAthlete />}</Async>

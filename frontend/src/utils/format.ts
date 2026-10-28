@@ -1,13 +1,13 @@
 export function fmtDate(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "–";
   const d = new Date(value.length === 10 ? `${value}T00:00:00` : value);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
+  return Number.isNaN(d.getTime()) ? "–" : d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 export function fmtDateTime(value: string | null | undefined): string {
-  if (!value) return "—";
+  if (!value) return "–";
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
+  if (Number.isNaN(d.getTime())) return "–";
   return `${d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" })} ${d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
@@ -17,16 +17,16 @@ export function fmtPeriod(from: string, to: string): string {
 
 /** "700.00" → "700", "86.50" → "86,5" */
 export function fmtNum(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "–";
   const n = Number(value);
   if (Number.isNaN(n)) return String(value);
   return n.toLocaleString("ru-RU", { maximumFractionDigits: 2 });
 }
 
 export function fmtTime(value: string | number | null | undefined): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return "–";
   const total = Number(value);
-  if (Number.isNaN(total)) return "—";
+  if (Number.isNaN(total)) return "–";
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = Math.floor(total % 60);

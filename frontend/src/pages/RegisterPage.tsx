@@ -30,6 +30,7 @@ export function RegisterPage() {
   const emailOk = f.email.length === 0 || isEmailLike(f.email);
   const passwordMismatch = confirmPassword.length > 0 && f.password !== confirmPassword;
   const credentialsOk = isEmailLike(f.email) && isPasswordStrong(f.password) && f.password === confirmPassword;
+  const ready = credentialsOk && disciplines.length > 0 && consent;
 
   const orgs = useMemo(
     () => (options.data?.organizations ?? []).filter((o) => !f.municipality_id || o.municipality_id === Number(f.municipality_id)),
@@ -68,10 +69,13 @@ export function RegisterPage() {
       <Card>
         <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
           <Typography variant="h5" sx={{ mb: 0.5 }}>
-            Быстрая регистрация спортсмена
+            Регистрация
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 3 }}>
+          <Typography color="text.secondary" sx={{ mb: 1 }}>
             После регистрации можно сразу смотреть календарь и подавать заявки. Скан подписанного согласия загружается в кабинете.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Эта форма – для спортсменов. Тренер или судья? Аккаунт заводит федерация – обратитесь к ней напрямую.
           </Typography>
           <Async q={options}>
             {(opt) => (
@@ -139,14 +143,14 @@ export function RegisterPage() {
                   <Box>
                     <FormControlLabel
                       control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} />}
-                      label={`Даю согласие на обработку персональных данных (152-ФЗ)${minor ? " — от имени законного представителя" : ""}`}
+                      label={`Даю согласие на обработку персональных данных (152-ФЗ)${minor ? " – от имени законного представителя" : ""}`}
                     />
                     <FormHelperText sx={{ ml: 4 }}>Обязательное условие регистрации. Согласие сохраняется в системе.</FormHelperText>
                   </Box>
 
                   {error && <Alert severity="error">{error}</Alert>}
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
-                    <Button type="submit" variant="contained" size="large" disabled={busy || !credentialsOk}>
+                    <Button type="submit" variant="contained" size="large" disabled={busy || !ready}>
                       {busy ? "Регистрируем…" : "Зарегистрироваться"}
                     </Button>
                     <Typography variant="body2" color="text.secondary">

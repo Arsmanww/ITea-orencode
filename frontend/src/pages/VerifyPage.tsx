@@ -56,8 +56,8 @@ export function VerifyPage() {
                 ["Дисциплина", q.data.discipline],
                 ["Статус соревнования", LEVEL_LABEL[q.data.level]],
                 ["Даты", fmtPeriod(q.data.start_date, q.data.end_date)],
-                ["Занятое место", q.data.place ? <Chip key="p" color="primary" label={`${q.data.place} место из ${q.data.participants}`} /> : "—"],
-                ["Набрано баллов", q.data.score ? fmtNum(q.data.score) : "—"],
+                ["Занятое место", q.data.place ? <Chip key="p" color="primary" label={`${q.data.place} место из ${q.data.participants}`} /> : "–"],
+                ["Набрано баллов", q.data.score ? fmtNum(q.data.score) : "–"],
               ]}
             />
             <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3 }}>

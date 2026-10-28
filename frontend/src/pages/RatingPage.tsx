@@ -25,7 +25,7 @@ import {
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { Fragment, useMemo, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import type { AgeGroup, RatingItem, RatingOut, Ref, Season, Squad } from "../api/types";
@@ -41,7 +41,7 @@ function Explainer({ data }: { data: RatingOut }) {
   return (
     <Section title="Как считается рейтинг">
       <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
-        Очки начисляются за 1–3 места в протоколе в зависимости от уровня соревнования; рейтинговый балл — сумма очков за сезон. Если спортсмен занял призовые места минимум на {data.settings.stability_min_prizes} соревнованиях, сумма умножается на коэффициент стабильности ×{fmtNum(data.settings.stability_coef)}. Спортсмены с действующей дисквалификацией или отстранением в рейтинг не попадают.
+        Очки начисляются за 1–3 места в протоколе в зависимости от уровня соревнования; рейтинговый балл – сумма очков за сезон. Если спортсмен занял призовые места минимум на {data.settings.stability_min_prizes} соревнованиях, сумма умножается на коэффициент стабильности ×{fmtNum(data.settings.stability_coef)}. Спортсмены с действующей дисквалификацией или отстранением в рейтинг не попадают.
       </Typography>
       <TableContainer>
         <Table size="small">
@@ -69,7 +69,7 @@ function Row({ item, selectable, selected, onToggle, isFed }: { item: RatingItem
         {selectable && <TableCell padding="checkbox"><Checkbox checked={selected} onChange={onToggle} inputProps={{ "aria-label": `Выбрать ${item.athlete_name}` }} /></TableCell>}
         <TableCell><b>{item.place}</b></TableCell>
         <TableCell sx={{ fontWeight: 600 }}>{item.athlete_name}<Typography variant="caption" display="block" color="text.secondary">{item.age} лет · {item.organization ?? "без организации"}</Typography></TableCell>
-        <TableCell>{item.rank ?? "—"}</TableCell>
+        <TableCell>{item.rank ?? "–"}</TableCell>
         <TableCell align="center">{item.prizes}</TableCell>
         <TableCell align="right">{item.base_points}</TableCell>
         <TableCell align="center">{boosted ? <Chip size="small" color="success" label={`×${fmtNum(item.coefficient)}`} /> : "×1"}</TableCell>
@@ -94,7 +94,7 @@ function Row({ item, selectable, selected, onToggle, isFed }: { item: RatingItem
                       <TableCell><Link component={RouterLink} to={`/competitions/${b.competition_id}`}>{b.title}</Link></TableCell>
                       <TableCell>{fmtDate(b.date)}</TableCell>
                       <TableCell>{TIER_LABEL[b.tier]}</TableCell>
-                      <TableCell align="center">{b.place ?? "—"}</TableCell>
+                      <TableCell align="center">{b.place ?? "–"}</TableCell>
                       <TableCell align="right">{b.points}</TableCell>
                     </TableRow>
                   ))}
@@ -122,7 +122,7 @@ function SquadDialog({ open, onClose, data, members, onCreated }: { open: boolea
         body: { season_id: data.season.id, discipline_id: table.discipline.id, age_group_id: data.age_group?.id ?? null, title: (title || defaultTitle).trim(), members: members.map((m) => ({ athlete_id: m.athlete_id })) },
       }),
     onSuccess: async () => {
-      toast.success("Состав сборной сохранён. Проект приказа — на вкладке «Сборные»");
+      toast.success("Состав сборной сохранён. Проект приказа – на вкладке «Сборные»");
       await invalidate("/squads");
       onCreated();
     },
@@ -136,7 +136,7 @@ function SquadDialog({ open, onClose, data, members, onCreated }: { open: boolea
         <Table size="small" stickyHeader>
           <TableHead><TableRow><TableCell>№</TableCell><TableCell>Спортсмен</TableCell><TableCell>Разряд</TableCell><TableCell align="right">Баллы</TableCell></TableRow></TableHead>
           <TableBody>
-            {members.map((m, i) => <TableRow key={m.athlete_id}><TableCell>{i + 1}</TableCell><TableCell>{m.athlete_name}</TableCell><TableCell>{m.rank ?? "—"}</TableCell><TableCell align="right">{fmtNum(m.total)}</TableCell></TableRow>)}
+            {members.map((m, i) => <TableRow key={m.athlete_id}><TableCell>{i + 1}</TableCell><TableCell>{m.athlete_name}</TableCell><TableCell>{m.rank ?? "–"}</TableCell><TableCell align="right">{fmtNum(m.total)}</TableCell></TableRow>)}
           </TableBody>
         </Table>
       </TableContainer>
@@ -151,11 +151,22 @@ function RatingTab({ onSquadCreated }: { onSquadCreated: () => void }) {
   const disciplines = useGet<Ref[]>("/reference/disciplines");
   const groups = useGet<AgeGroup[]>("/reference/age-groups");
   const ranks = useGet<Ref[]>("/reference/ranks");
-  const [f, setF] = useState({ season: "", discipline: "algorithmic", age: "", rank: "" });
+  const [params, setParams] = useSearchParams();
+  const f = {
+    season: params.get("season") ?? "", discipline: params.get("discipline") ?? "algorithmic",
+    age: params.get("age") ?? "", rank: params.get("rank") ?? "",
+  };
   const [selected, setSelected] = useState<number[]>([]);
   const [dialog, setDialog] = useState(false);
   const q = useGet<RatingOut>("/rating", { season_id: f.season, discipline: f.discipline, age_group_id: f.age, min_rank_id: f.rank, limit: 200 });
-  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => { setF((p) => ({ ...p, [k]: e.target.value })); setSelected([]); };
+  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (e.target.value) next.set(k, e.target.value); else next.delete(k);
+      return next;
+    }, { replace: true });
+    setSelected([]);
+  };
 
   const chosen = useMemo(() => (q.data?.tables[0]?.items ?? []).filter((i) => selected.includes(i.athlete_id)), [q.data, selected]);
 
@@ -188,7 +199,7 @@ function RatingTab({ onSquadCreated }: { onSquadCreated: () => void }) {
               </Typography>
               {t.excluded.length > 0 && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                  Исключены из рейтинга: {t.excluded.map((e) => `${e.athlete_name} — ${e.reason}`).join("; ")}.
+                  Исключены из рейтинга: {t.excluded.map((e) => `${e.athlete_name} – ${e.reason}`).join("; ")}.
                 </Alert>
               )}
               {isFed && (
@@ -272,8 +283,8 @@ function SquadsTab() {
                     <TableBody>
                       {s.members.map((m) => (
                         <TableRow key={m.athlete_id}>
-                          <TableCell>{m.position}</TableCell><TableCell sx={{ fontWeight: 600 }}>{m.athlete_name}</TableCell><TableCell>{m.organization ?? "—"}</TableCell>
-                          <TableCell>{m.rank ?? "—"}</TableCell><TableCell>{m.coach ?? "—"}</TableCell><TableCell align="right">{fmtNum(m.rating_points)}</TableCell>
+                          <TableCell>{m.position}</TableCell><TableCell sx={{ fontWeight: 600 }}>{m.athlete_name}</TableCell><TableCell>{m.organization ?? "–"}</TableCell>
+                          <TableCell>{m.rank ?? "–"}</TableCell><TableCell>{m.coach ?? "–"}</TableCell><TableCell align="right">{fmtNum(m.rating_points)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -293,7 +304,7 @@ function SquadsTab() {
 
 export function RatingPage() {
   const { me } = useAuth();
-  const { tab, select, onChange } = useTabs();
+  const { tab, select, onChange } = useTabs(0, "tab");
   const isFed = me?.active_role === "federation";
   return (
     <Box>

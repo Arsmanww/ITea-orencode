@@ -8,7 +8,7 @@ from app.models.enums import RequestKind, RequestStatus, RoleCode, pg_enum
 
 
 class RankRequest(Base, CreatedAtMixin):
-    """Заявка на разряд (С7). Основание — результат из протокола."""
+    """Заявка на разряд (С7). Основание – результат из протокола."""
 
     __tablename__ = "rank_requests"
 

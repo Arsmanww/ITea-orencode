@@ -24,7 +24,7 @@ function Dynamics({ title, rows, years }: { title: string; rows: HeadcountRow[];
               const last = r.counts[years[years.length - 1]] ?? 0;
               return (
                 <TableRow key={r.label}>
-                  <TableCell>{r.label.replace("Программирование ", "")}{r.extra && r.extra !== "—" ? <Typography variant="caption" display="block" color="text.secondary">{r.extra}</Typography> : null}</TableCell>
+                  <TableCell>{r.label.replace("Программирование ", "")}{r.extra && r.extra !== "–" ? <Typography variant="caption" display="block" color="text.secondary">{r.extra}</Typography> : null}</TableCell>
                   {years.map((y) => <TableCell key={y} align="right">{r.counts[y] ?? 0}</TableCell>)}
                   <TableCell align="right" sx={{ color: last >= first ? "success.main" : "error.main", fontWeight: 700 }}>{last - first > 0 ? "+" : ""}{last - first}</TableCell>
                 </TableRow>
@@ -49,7 +49,7 @@ export function ReportsPage() {
 
       <Section title="Численность занимающихся спортивным программированием">
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          Динамика по годам в разрезах муниципалитетов, организаций, дисциплин и возрастных групп. В .xlsx — отдельные листы с итогами, диаграммой и приростом.
+          Динамика по годам в разрезах муниципалитетов, организаций, дисциплин и возрастных групп. В .xlsx – отдельные листы с итогами, диаграммой и приростом.
         </Typography>
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
           <TextField label="С года" type="number" value={from} onChange={(e) => setFrom(e.target.value)} sx={{ maxWidth: 160 }} slotProps={{ htmlInput: { min: 2000, max: 2100 } }} />

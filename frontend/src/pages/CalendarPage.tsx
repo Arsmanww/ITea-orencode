@@ -4,7 +4,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import EventIcon from "@mui/icons-material/Event";
 import PlaceIcon from "@mui/icons-material/Place";
 import { Box, Button, Card, CardActionArea, CardActions, CardContent, Chip, FormControlLabel, MenuItem, Pagination, Stack, Switch, TextField, Typography } from "@mui/material";
-import { useState } from "react";
 import { Link as RouterLink, useSearchParams } from "react-router-dom";
 
 import type { AgeGroup, AthleteProfile, CompetitionList, Ref } from "../api/types";
@@ -18,11 +17,15 @@ const PAGE_SIZE = 12;
 
 export function CalendarPage() {
   const { me } = useAuth();
-  // статус можно задать ссылкой: плашка «приём заявок» в шапке ведёт на уже отфильтрованный календарь
-  const [params] = useSearchParams();
-  const [f, setF] = useState({ discipline: "", status: params.get("status") ?? "", year: "", level: "", age_group_id: "" });
-  const [forMe, setForMe] = useState(false);
-  const [page, setPage] = useState(1);
+  // Фильтры живут в адресной строке: плашка «приём заявок» в шапке ведёт на уже отфильтрованный
+  // календарь, а «Назад» браузера возвращает к тем же фильтрам, а не к пустой форме.
+  const [params, setParams] = useSearchParams();
+  const f = {
+    discipline: params.get("discipline") ?? "", status: params.get("status") ?? "", year: params.get("year") ?? "",
+    level: params.get("level") ?? "", age_group_id: params.get("age_group_id") ?? "",
+  };
+  const forMe = params.get("for_me") === "1";
+  const page = Math.max(1, Number(params.get("page")) || 1);
   const disciplines = useGet<Ref[]>("/reference/disciplines");
   const ageGroups = useGet<AgeGroup[]>("/reference/age-groups");
   const list = useGet<CompetitionList>("/competitions", {
@@ -31,10 +34,31 @@ export function CalendarPage() {
   const isAthlete = me?.active_role === "athlete";
   const isCoach = me?.active_role === "coach";
   const profile = useGet<AthleteProfile>("/athletes/me/profile", undefined, { enabled: isAthlete });
+  const setPage = (p: number) => setParams((prev) => {
+    const next = new URLSearchParams(prev);
+    next.set("page", String(p));
+    return next;
+  }, { replace: true });
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => {
-    setF((p) => ({ ...p, [k]: e.target.value }));
-    setPage(1);
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (e.target.value) next.set(k, e.target.value); else next.delete(k);
+      next.set("page", "1");
+      return next;
+    }, { replace: true });
   };
+  const setStatus = (v: string) => set("status")({ target: { value: v } });
+  const setForMe = (v: boolean) => setParams((prev) => {
+    const next = new URLSearchParams(prev);
+    if (v) next.set("for_me", "1"); else next.delete("for_me");
+    next.set("page", "1");
+    return next;
+  }, { replace: true });
+  const resetFilters = () => setParams((prev) => {
+    const next = new URLSearchParams(prev);
+    for (const key of ["discipline", "status", "year", "level", "age_group_id", "for_me", "page"]) next.delete(key);
+    return next;
+  }, { replace: true });
 
   return (
     <Box>
@@ -90,17 +114,14 @@ export function CalendarPage() {
             color={f.status === "registration_open" ? "primary" : "default"}
             variant={f.status === "registration_open" ? "filled" : "outlined"}
             label={isCoach ? "Сейчас можно подать за подопечного" : "Сейчас принимают заявки"}
-            onClick={() => {
-              setF((p) => ({ ...p, status: p.status === "registration_open" ? "" : "registration_open" }));
-              setPage(1);
-            }}
+            onClick={() => setStatus(f.status === "registration_open" ? "" : "registration_open")}
           />
         </Stack>
       )}
       {isAthlete && (
         <FormControlLabel
           sx={{ mb: 2 }}
-          control={<Switch checked={forMe} onChange={(e) => { setForMe(e.target.checked); setPage(1); }} />}
+          control={<Switch checked={forMe} onChange={(e) => setForMe(e.target.checked)} />}
           label="Только подходящие мне по дисциплине и возрасту на дату старта"
         />
       )}
@@ -108,7 +129,7 @@ export function CalendarPage() {
       <Async q={list}>
         {(data) =>
           data.items.length === 0 ? (
-            <EmptyState title="Соревнований по этим условиям нет" hint="Измените фильтры или сбросьте их" action={<Button onClick={() => { setF({ discipline: "", status: "", year: "", level: "", age_group_id: "" }); setForMe(false); }}>Сбросить фильтры</Button>} />
+            <EmptyState title="Соревнований по этим условиям нет" hint="Измените фильтры или сбросьте их" action={<Button onClick={resetFilters}>Сбросить фильтры</Button>} />
           ) : (
             <>
               <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>

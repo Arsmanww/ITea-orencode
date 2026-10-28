@@ -3,7 +3,7 @@ import { Box, Tooltip } from "@mui/material";
 import { BRAND, FONT_MONO } from "../../theme";
 import { MAP_HEIGHT, MAP_WIDTH, REGION_SILHOUETTE } from "./regionShapes";
 
-/** Силуэт Оренбургской области и код региона — опознавательный знак в шапке. */
+/** Силуэт Оренбургской области и код региона – опознавательный знак в шапке. */
 export function RegionBadge() {
   return (
     <Tooltip title="Оренбургская область, 56 регион">

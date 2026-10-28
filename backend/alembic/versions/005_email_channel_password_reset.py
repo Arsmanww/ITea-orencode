@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.drop_column('users', 'max_link_code')
     op.drop_column('users', 'max_user_id')
 
-    # --- канал уведомлений: почта вместо MAX; у пользователя — тумблер вкл/выкл ---
+    # --- канал уведомлений: почта вместо MAX; у пользователя – тумблер вкл/выкл ---
     op.add_column('users', sa.Column('email_notifications_enabled', sa.Boolean(), server_default=sa.text('true'), nullable=False))
 
     op.execute("DELETE FROM notification_deliveries WHERE channel = 'max'")

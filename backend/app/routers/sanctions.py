@@ -32,7 +32,7 @@ class SanctionIn(BaseModel):
     athlete_id: int
     kind: SanctionKind
     date_from: date
-    date_to: date | None = Field(default=None, description="Пусто — бессрочно до решения федерации")
+    date_to: date | None = Field(default=None, description="Пусто – бессрочно до решения федерации")
     reason: str = Field(min_length=3, max_length=2000)
     competition_id: int | None = Field(default=None, description="Соревнование, на котором зафиксировано нарушение")
 

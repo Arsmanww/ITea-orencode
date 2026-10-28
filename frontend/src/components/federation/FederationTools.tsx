@@ -2,7 +2,9 @@ import AddIcon from "@mui/icons-material/Add";
 import {
   Box,
   Button,
+  Checkbox,
   Chip,
+  FormControlLabel,
   Link,
   MenuItem,
   Pagination,
@@ -15,17 +17,20 @@ import {
   TableHead,
   TableRow,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 
 import { api } from "../../api/client";
-import type { AuditItem, AuditPage, Ref, RegistryAthlete, Sanction, SanctionKind } from "../../api/types";
+import type { AuditItem, AuditPage, Ref, RegistrationOptions, RegistryAthlete, Sanction, SanctionKind } from "../../api/types";
 import { fmtDate, fmtDateTime, todayIso } from "../../utils/format";
 import { AUDIT_ACTION_LABEL, ENTITY_LABEL, ROLE_LABEL, SANCTION_LABEL } from "../../utils/labels";
+import { isEmailLike } from "../../utils/password";
 import { AthletePicker } from "../AthletePicker";
 import { Async, DateField, EmptyState, FormDialog, Section, useGet, useInvalidate } from "../common";
 import { useToast } from "../Toast";
@@ -35,7 +40,7 @@ const AUDIT_PAGE = 30;
 /** Короткое описание изменений из diff журнала: «поле: было → стало» или «поле: значение». */
 function diffText(diff: AuditItem["diff"]): string {
   if (!diff) return "";
-  const show = (v: unknown) => (v === null || v === undefined || v === "None" ? "—" : typeof v === "object" ? JSON.stringify(v) : String(v));
+  const show = (v: unknown) => (v === null || v === undefined || v === "None" ? "–" : typeof v === "object" ? JSON.stringify(v) : String(v));
   if (diff.before && diff.after && typeof diff.before === "object" && typeof diff.after === "object") {
     const before = diff.before as Record<string, unknown>;
     const after = diff.after as Record<string, unknown>;
@@ -79,7 +84,7 @@ export function AuditLogSection() {
                         <TableRow key={a.id}>
                           <TableCell sx={{ whiteSpace: "nowrap" }}>{fmtDateTime(a.created_at)}</TableCell>
                           <TableCell sx={{ minWidth: 160 }}>
-                            {a.user?.full_name ?? "—"}
+                            {a.user?.full_name ?? "–"}
                             {a.active_role && <Typography variant="caption" display="block" color="text.secondary">{ROLE_LABEL[a.active_role]}{a.ip ? ` · ${a.ip}` : ""}</Typography>}
                           </TableCell>
                           <TableCell sx={{ minWidth: 180 }}>{AUDIT_ACTION_LABEL[a.action] ?? a.action}</TableCell>
@@ -88,7 +93,7 @@ export function AuditLogSection() {
                           </TableCell>
                           <TableCell sx={{ maxWidth: 360 }}>
                             <Tooltip title={text} placement="top-start">
-                              <Typography variant="body2" color="text.secondary" noWrap>{text || "—"}</Typography>
+                              <Typography variant="body2" color="text.secondary" noWrap>{text || "–"}</Typography>
                             </Tooltip>
                           </TableCell>
                         </TableRow>
@@ -169,7 +174,7 @@ export function SanctionsSection() {
                     <TableRow key={s.id}>
                       <TableCell sx={{ fontWeight: 600 }}>{s.athlete.full_name}</TableCell>
                       <TableCell><Chip size="small" color={s.active ? "error" : "default"} label={SANCTION_LABEL[s.kind]} /></TableCell>
-                      <TableCell sx={{ whiteSpace: "nowrap" }}>{fmtDate(s.date_from)} — {s.date_to ? fmtDate(s.date_to) : "бессрочно"}</TableCell>
+                      <TableCell sx={{ whiteSpace: "nowrap" }}>{fmtDate(s.date_from)} – {s.date_to ? fmtDate(s.date_to) : "бессрочно"}</TableCell>
                       <TableCell sx={{ maxWidth: 320 }}>
                         {s.reason}
                         {s.competition && <Typography variant="caption" display="block"><Link component={RouterLink} to={`/competitions/${s.competition.id}`}>{s.competition.name}</Link></Typography>}
@@ -191,7 +196,7 @@ export function SanctionsSection() {
         </TextField>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
           <DateField label="С" value={form.date_from} onChange={(e) => setForm({ ...form, date_from: e.target.value })} required />
-          <DateField label="По (пусто — бессрочно)" value={form.date_to} onChange={(e) => setForm({ ...form, date_to: e.target.value })} />
+          <DateField label="По (пусто – бессрочно)" value={form.date_to} onChange={(e) => setForm({ ...form, date_to: e.target.value })} />
         </Box>
         <TextField label="Основание (рапорт, решение)" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} multiline minRows={2} required />
       </FormDialog>
@@ -212,7 +217,7 @@ export function CompetitionTypesSection() {
   const add = useMutation({
     mutationFn: () => api("/reference/competition-types", { method: "POST", body: { name: name.trim() } }),
     onSuccess: async () => {
-      toast.success("Тип добавлен — он уже доступен в форме создания соревнования");
+      toast.success("Тип добавлен – он уже доступен в форме создания соревнования");
       setName("");
       setError(null);
       await invalidate("/reference/competition-types");
@@ -248,6 +253,96 @@ export function CompetitionTypesSection() {
           </Stack>
         )}
       </Async>
+    </Section>
+  );
+}
+
+interface StaffOut { user_id: number; email: string; role: string; created_new_user: boolean }
+
+const EMPTY_STAFF_FORM = {
+  role: "coach" as "coach" | "judge", email: "", last_name: "", first_name: "", patronymic: "",
+  birth_date: "", gender: "male", phone: "", municipality_id: "", organization_id: "", bio: "",
+};
+
+/** Тренер и судья не регистрируются сами – федерация заводит аккаунт, человек задаёт пароль по ссылке из письма. */
+export function StaffSection() {
+  const toast = useToast();
+  const options = useGet<RegistrationOptions>("/public/options");
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState(EMPTY_STAFF_FORM);
+  const [consent, setConsent] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((p) => ({ ...p, [k]: e.target.value }));
+  const orgs = useMemo(
+    () => (options.data?.organizations ?? []).filter((o) => !f.municipality_id || o.municipality_id === Number(f.municipality_id)),
+    [options.data, f.municipality_id],
+  );
+  const ready = isEmailLike(f.email) && !!f.last_name.trim() && !!f.first_name.trim() && !!f.birth_date;
+
+  const create = useMutation({
+    mutationFn: () => api<StaffOut>("/federation/staff", {
+      method: "POST",
+      body: {
+        email: f.email.trim(), last_name: f.last_name.trim(), first_name: f.first_name.trim(),
+        patronymic: f.patronymic.trim() || null, birth_date: f.birth_date, gender: f.gender,
+        phone: f.phone.trim() || null, municipality_id: f.municipality_id ? Number(f.municipality_id) : null,
+        organization_id: f.organization_id ? Number(f.organization_id) : null,
+        role: f.role, bio: f.role === "coach" ? (f.bio.trim() || null) : null, consent,
+      },
+    }),
+    onSuccess: (r) => {
+      toast.success(r.created_new_user
+        ? `Аккаунт создан, письмо со ссылкой для входа отправлено на ${r.email}`
+        : `Роль «${ROLE_LABEL[f.role]}» добавлена существующему аккаунту ${r.email}`);
+      setOpen(false);
+      setF(EMPTY_STAFF_FORM);
+      setConsent(true);
+    },
+    onError: (e) => setError(e instanceof Error ? e.message : "Ошибка"),
+  });
+
+  return (
+    <Section title="Тренеры и судьи" actions={<Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>Завести аккаунт</Button>}>
+      <Typography variant="body2" color="text.secondary">
+        Тренер или судья не регистрируется сам: федерация заводит аккаунт, человек получает письмо со ссылкой и задаёт
+        пароль. Если email уже есть на платформе – роль добавится к существующему аккаунту (мульти-роль), письмо не отправляется.
+        Полный список – в «Реестре».
+      </Typography>
+      <FormDialog open={open} title="Завести аккаунт тренера или судьи" onClose={() => setOpen(false)}
+        onSubmit={() => { setError(null); create.mutate(); }} submitLabel="Создать" busy={create.isPending}
+        error={error} submitDisabled={!ready}>
+        <ToggleButtonGroup exclusive fullWidth value={f.role} onChange={(_, v) => v && setF((p) => ({ ...p, role: v }))}>
+          <ToggleButton value="coach">Тренер</ToggleButton>
+          <ToggleButton value="judge">Судья</ToggleButton>
+        </ToggleButtonGroup>
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
+          <TextField label="Фамилия" value={f.last_name} onChange={set("last_name")} required />
+          <TextField label="Имя" value={f.first_name} onChange={set("first_name")} required />
+          <TextField label="Отчество" value={f.patronymic} onChange={set("patronymic")} />
+          <TextField select label="Пол" value={f.gender} onChange={set("gender")}>
+            <MenuItem value="male">Мужской</MenuItem>
+            <MenuItem value="female">Женский</MenuItem>
+          </TextField>
+          <DateField label="Дата рождения" value={f.birth_date} onChange={set("birth_date")} required slotProps={{ htmlInput: { max: todayIso() } }} />
+          <TextField label="Телефон (необязательно)" value={f.phone} onChange={set("phone")} />
+          <TextField label="Email" type="email" value={f.email} onChange={set("email")} required sx={{ gridColumn: { sm: "1 / -1" } }} />
+          <TextField select label="Муниципалитет" value={f.municipality_id}
+                     onChange={(e) => setF((p) => ({ ...p, municipality_id: e.target.value, organization_id: "" }))}>
+            <MenuItem value="">Не указано</MenuItem>
+            {(options.data?.municipalities ?? []).map((m) => <MenuItem key={m.id} value={m.id}>{m.name}</MenuItem>)}
+          </TextField>
+          <TextField select label="Организация" value={f.organization_id} onChange={set("organization_id")}>
+            <MenuItem value="">Без организации</MenuItem>
+            {orgs.map((o) => <MenuItem key={o.id} value={o.id}>{o.name}</MenuItem>)}
+          </TextField>
+        </Box>
+        {f.role === "coach" && <TextField label="О тренере (необязательно)" value={f.bio} onChange={set("bio")} multiline minRows={2} />}
+        <FormControlLabel
+          control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} />}
+          label="Согласие на обработку персональных данных уже получено офлайн"
+        />
+      </FormDialog>
     </Section>
   );
 }

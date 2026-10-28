@@ -1,9 +1,9 @@
 import { alpha, createTheme } from "@mui/material/styles";
 
 /**
- * Дизайн-токены ФСП Оренбург (подробности — docs/design-system.md).
+ * Дизайн-токены ФСП Оренбург (подробности – docs/design-system.md).
  * Светлая база для рабочих экранов, тёмные «обложки» (hero, футер) для техно-акцента.
- * Шаг сетки — 8 px (theme.spacing(1) = 8).
+ * Шаг сетки – 8 px (theme.spacing(1) = 8).
  */
 export const BRAND = {
   blue: "#2B59FF", // электрик: основной акцент, кнопки, ссылки
@@ -72,7 +72,9 @@ export const theme = createTheme({
     MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
     MuiCard: {
       defaultProps: { variant: "outlined" },
-      styleOverrides: { root: { borderColor: BRAND.border, borderRadius: 16, boxShadow: "0 1px 2px rgba(14,22,48,0.03)" } },
+      // overflow: hidden – без него подсветка CardActionArea при наведении/клике рисуется прямым
+      // прямоугольником и торчит острыми углами за скруглённой рамкой карточки.
+      styleOverrides: { root: { borderColor: BRAND.border, borderRadius: 16, boxShadow: "0 1px 2px rgba(14,22,48,0.03)", overflow: "hidden" } },
     },
     MuiChip: { styleOverrides: { root: { fontWeight: 600, borderRadius: 999 } } },
     MuiTableCell: {

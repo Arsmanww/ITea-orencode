@@ -72,7 +72,7 @@ export function CompetitionFormPage() {
 
   return (
     <Box>
-      <PageTitle title="Новое соревнование" subtitle="Региональные соревнования входят в план Оренбургской области, межрегиональные и всероссийские — в ЕКП Минспорта России" />
+      <PageTitle title="Новое соревнование" subtitle="Региональные соревнования входят в план Оренбургской области, межрегиональные и всероссийские – в ЕКП Минспорта России" />
       <Section title="Основное">
         <Stack spacing={2}>
           <TextField label="Название" value={f.title} onChange={set("title")} required />
@@ -152,7 +152,7 @@ export function CompetitionFormPage() {
         <input ref={file} type="file" hidden accept=".pdf,.doc,.docx" onChange={(e) => setRegulation(e.target.files?.[0] ?? null)} />
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
           <Button variant="outlined" onClick={() => file.current?.click()}>Выбрать файл (PDF, DOC, DOCX)</Button>
-          <Typography color="text.secondary">{regulation ? regulation.name : "Файл не выбран — положение можно добавить позже"}</Typography>
+          <Typography color="text.secondary">{regulation ? regulation.name : "Файл не выбран – положение можно добавить позже"}</Typography>
         </Stack>
       </Section>
 

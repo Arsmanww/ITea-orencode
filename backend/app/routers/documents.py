@@ -87,7 +87,7 @@ async def _athlete_report(session: AsyncSession, request: Request, current: Curr
     municipality = await session.get(Municipality, athlete.municipality_id) if athlete.municipality_id else None
 
     enrollments = [
-        f"{d.name}" + (f" — {o.name}" if o else " — без организации")
+        f"{d.name}" + (f" – {o.name}" if o else " – без организации")
         for e, d, o in (await session.execute(
             select(AthleteEnrollment, Discipline, Organization).join(Discipline, Discipline.id == AthleteEnrollment.discipline_id)
             .outerjoin(Organization, Organization.id == AthleteEnrollment.organization_id)

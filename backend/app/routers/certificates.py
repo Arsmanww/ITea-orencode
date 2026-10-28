@@ -139,7 +139,7 @@ async def export_certificate(certificate_id: int, session: Session, current: Ath
             "number": cert.number, "athlete_name": full_name(user), "birth_date": user.birth_date, "competition_title": comp.title,
             "discipline": disc.name, "level": comp.level.value, "start_date": comp.start_date, "end_date": comp.end_date,
             "location": comp.location, "place": result.place, "participants": participants, "score": result.score,
-            "protocol_number": protocol.number if protocol else "—", "issued_at": cert.issued_at, "verify_url": verify_url(cert.verify_token),
+            "protocol_number": protocol.number if protocol else "–", "issued_at": cert.issued_at, "verify_url": verify_url(cert.verify_token),
         },
         qr_png(verify_url(cert.verify_token)),
     )

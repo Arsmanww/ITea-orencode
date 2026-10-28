@@ -121,7 +121,7 @@ export function ModerationPanel({ comp }: { comp: Competition }) {
                     <TableRow key={a.id}>
                       <TableCell>{a.athlete.full_name}</TableCell>
                       <TableCell>{a.age_on_start}</TableCell>
-                      <TableCell>{a.team?.name ?? "—"}</TableCell>
+                      <TableCell>{a.team?.name ?? "–"}</TableCell>
                       <TableCell>{a.submitted_by_role === "coach" ? "тренер" : "спортсмен"}</TableCell>
                       <TableCell><AppStatusChip status={a.status} /></TableCell>
                       <TableCell align="right">
@@ -217,7 +217,7 @@ export function JudgesPanel({ comp }: { comp: Competition }) {
       <FormDialog open={open} title="Назначить судью" onClose={() => setOpen(false)} onSubmit={() => assign.mutate()} submitDisabled={!judgeId || !positionId} busy={assign.isPending} error={error}>
         <TextField select label="Судья" value={judgeId} onChange={(e) => setJudgeId(e.target.value)}>
           {(judges.data ?? []).map((j) => (
-            <MenuItem key={j.id} value={String(j.id)}>{j.name} — {j.category ?? "без категории"}{j.valid_until ? ` (до ${j.valid_until})` : ""}</MenuItem>
+            <MenuItem key={j.id} value={String(j.id)}>{j.name} – {j.category ?? "без категории"}{j.valid_until ? ` (до ${j.valid_until})` : ""}</MenuItem>
           ))}
         </TextField>
         <TextField select label="Судейская должность" value={positionId} onChange={(e) => setPositionId(e.target.value)}>
@@ -332,7 +332,7 @@ export function ResultsPanel({ comp }: { comp: Competition }) {
                 </Table>
               </TableContainer>
               <Typography variant="body2" color="text.secondary">
-                Места проставляются автоматически при публикации: больше баллов — выше, при равенстве — больше решённых задач и меньше времени. Для неявившихся укажите «Неявка».
+                Места проставляются автоматически при публикации: больше баллов – выше, при равенстве – больше решённых задач и меньше времени. Для неявившихся укажите «Неявка».
               </Typography>
               {publishError && <Alert severity="error">{publishError}</Alert>}
               <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
@@ -367,7 +367,7 @@ export function ProtocolPanel({ comp }: { comp: Competition }) {
       </Typography>
       {p.evsk.length > 0 && (
         <Alert severity="success" sx={{ mb: 1.5 }}>
-          Результаты {p.evsk.length} {plural(p.evsk.length, ["участника", "участников", "участников"])} могут соответствовать разрядным требованиям ЕВСК —
+          Результаты {p.evsk.length} {plural(p.evsk.length, ["участника", "участников", "участников"])} могут соответствовать разрядным требованиям ЕВСК –
           отмечены в колонке «ЕВСК». Заявку на разряд подаёт тренер (или спортсмен без тренера); заявление в Госуслугах федерация формирует вне платформы.
         </Alert>
       )}
@@ -388,11 +388,11 @@ export function ProtocolPanel({ comp }: { comp: Competition }) {
           <TableBody>
             {p.snapshot.rows.map((r) => (
               <TableRow key={r.athlete_id} sx={r.place && r.place <= 3 ? { bgcolor: "#FFF8E5" } : undefined}>
-                <TableCell><Box component="b">{r.place ?? "—"}</Box></TableCell>
+                <TableCell><Box component="b">{r.place ?? "–"}</Box></TableCell>
                 <TableCell>{r.full_name}</TableCell>
-                {hasTeam && <TableCell>{r.team ?? "—"}</TableCell>}
+                {hasTeam && <TableCell>{r.team ?? "–"}</TableCell>}
                 <TableCell align="right">{fmtNum(r.score)}</TableCell>
-                <TableCell align="right">{r.tasks_solved ?? "—"}</TableCell>
+                <TableCell align="right">{r.tasks_solved ?? "–"}</TableCell>
                 <TableCell align="right">{fmtTime(r.time_seconds)}</TableCell>
                 <TableCell>{r.status === "ranked" ? "" : RESULT_STATUS_LABEL[r.status as keyof typeof RESULT_STATUS_LABEL] ?? r.status}</TableCell>
                 {p.evsk.length > 0 && (

@@ -121,7 +121,7 @@ export function JudgeCabinet() {
                         <TableCell>{fmtDate(r.created_at)}</TableCell>
                         <TableCell>{KIND_LABEL[r.kind]}: {r.category.name}</TableCell>
                         <TableCell><ReqStatusChip status={r.status} /></TableCell>
-                        <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "—"}</TableCell>
+                        <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "–"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

@@ -134,7 +134,7 @@ export function Hero({ nav }: { nav: Navigator }) {
               </Box>
             </Typography>
             <Typography sx={{ fontSize: { xs: 16, md: 18 }, lineHeight: 1.65, color: "rgba(255,255,255,0.72)", maxWidth: 560, mb: 4 }}>
-              Турниры, заявки, протоколы, разряды и рейтинг в одной платформе — для школьников, студентов, тренеров и судей Оренбургской области.
+              Турниры, заявки, протоколы, разряды и рейтинг в одной платформе – для школьников, студентов, тренеров и судей Оренбургской области.
             </Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 6 }}>
               {me ? (

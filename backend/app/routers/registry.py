@@ -1,6 +1,6 @@
 """Реестр: спортсмены, тренеры, судьи и организации с поиском и фильтрами (кабинет федерации).
 
-Спортсменов в реестре ищет и тренер — чтобы отправить запрос на привязку; ему отдаётся
+Спортсменов в реестре ищет и тренер – чтобы отправить запрос на привязку; ему отдаётся
 сокращённая карточка без контактов.
 """
 
@@ -43,7 +43,7 @@ FederationOnly = Annotated[CurrentUser, Depends(require_role(RoleCode.FEDERATION
 AthleteSearcher = Annotated[CurrentUser, Depends(require_role(RoleCode.FEDERATION, RoleCode.COACH))]
 Limit = Annotated[int, Query(ge=1, le=200)]
 Offset = Annotated[int, Query(ge=0)]
-Search = Annotated[str | None, Query(max_length=100, description="Часть ФИО (для федерации — и email)")]
+Search = Annotated[str | None, Query(max_length=100, description="Часть ФИО (для федерации – и email)")]
 
 T = TypeVar("T")
 
@@ -147,7 +147,7 @@ async def registry_athletes(
     current: AthleteSearcher,
     q: Search = None,
     discipline_id: int | None = None,
-    organization_id: Annotated[int | None, Query(description="0 — «без организации»")] = None,
+    organization_id: Annotated[int | None, Query(description="0 – «без организации»")] = None,
     rank_id: Annotated[int | None, Query(description="Действующий разряд (с учётом дисциплины, если она выбрана)")] = None,
     age_group_id: int | None = None,
     municipality_id: int | None = None,

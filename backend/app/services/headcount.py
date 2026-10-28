@@ -115,7 +115,7 @@ async def build_headcount(session: AsyncSession, year_from: int, year_to: int) -
 
     report.municipalities = to_rows(muni, {m.id: m.name for m in municipalities})
     org_labels = {o.id: o.name for o in organizations} | {"none": NO_ORG}
-    org_types = {o.id: ORG_TYPE_LABELS[o.type] for o in organizations} | {"none": "—"}
+    org_types = {o.id: ORG_TYPE_LABELS[o.type] for o in organizations} | {"none": "–"}
     report.organizations = to_rows(org, org_labels, org_types)
     report.disciplines = to_rows(disc, {d.id: d.name for d in disciplines})
     report.age_groups = [Row(label, {y: len(v[y]) for y in years}) for label, v in age.items()]

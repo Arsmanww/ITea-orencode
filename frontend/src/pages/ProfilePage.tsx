@@ -17,7 +17,7 @@ function short(name: string) {
   return name.replace("Программирование ", "");
 }
 
-/** Карточка «кто я»: общие данные аккаунта и блок по каждой роли (у мульти-аккаунта — несколько). */
+/** Карточка «кто я»: общие данные аккаунта и блок по каждой роли (у мульти-аккаунта – несколько). */
 export function ProfilePage() {
   const q = useGet<MyProfile>("/me/profile");
   return (
@@ -124,7 +124,7 @@ export function ProfilePage() {
                       {p.athlete.antidoping_cert_url && <> <Link href={p.athlete.antidoping_cert_url} target="_blank" rel="noreferrer">Сертификат</Link></>}
                     </Alert>
                   ) : (
-                    <Alert severity="warning">Отметка о прохождении онлайн-курса РУСАДА не указана — добавьте её в кабинете спортсмена.</Alert>
+                    <Alert severity="warning">Отметка о прохождении онлайн-курса РУСАДА не указана – добавьте её в кабинете спортсмена.</Alert>
                   )}
                 </Box>
                 {p.athlete.guardian_name && (

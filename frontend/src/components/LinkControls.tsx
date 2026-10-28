@@ -24,7 +24,7 @@ export function LinkStatusChip({ status }: { status: LinkStatus }) {
   return <Chip size="small" color={STATUS_COLOR[status]} variant={status === "suspended" ? "outlined" : "filled"} label={LINK_STATUS_LABEL[status]} />;
 }
 
-/** Смена статуса связи тренер–спортсмен и история изменений. side — кто нажимает; menu — компактно, в меню «⋯». */
+/** Смена статуса связи тренер–спортсмен и история изменений. side – кто нажимает; menu – компактно, в меню «⋯». */
 export function LinkActions({ linkId, status, who, side, menu = false }: { linkId: number; status: LinkStatus; who: string; side: "coach" | "athlete"; menu?: boolean }) {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const toast = useToast();
@@ -70,7 +70,7 @@ export function LinkActions({ linkId, status, who, side, menu = false }: { linkI
         submitLabel={target?.label} busy={change.isPending} error={error}>
         <Typography variant="body2" color="text.secondary">
           {target?.to === "suspended" && "Пока связь приостановлена, тренер не подаёт заявки за спортсмена; возобновить можно в любой момент."}
-          {target?.to === "ended" && "Завершённую связь вернуть нельзя — понадобится новый запрос на привязку."}
+          {target?.to === "ended" && "Завершённую связь вернуть нельзя – понадобится новый запрос на привязку."}
           {target?.to === "active" && "Связь снова станет активной: тренер сможет подавать заявки за спортсмена."}
         </Typography>
         <TextField label="Комментарий (попадёт в историю)" value={comment} onChange={(e) => setComment(e.target.value)} multiline minRows={2} />

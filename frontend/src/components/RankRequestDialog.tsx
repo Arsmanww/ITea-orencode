@@ -12,17 +12,17 @@ import { useToast } from "./Toast";
 interface Props {
   open: boolean;
   onClose: () => void;
-  /** null — спортсмен подаёт за себя; число — тренер подаёт за подопечного */
+  /** null – спортсмен подаёт за себя; число – тренер подаёт за подопечного */
   athleteId: number | null;
   athleteName?: string;
   disciplines: DisciplineRef[];
   /** действующий разряд по дисциплинам (id дисциплины → разряд) */
   currentRanks: Record<number, { id: number; name: string } | null | undefined>;
-  /** дисциплины, где у спортсмена есть тренер (подаёт тренер) — только для режима «сам за себя» */
+  /** дисциплины, где у спортсмена есть тренер (подаёт тренер) – только для режима «сам за себя» */
   coachedDisciplines?: Record<number, string>;
 }
 
-/** Заявка на присвоение/подтверждение разряда: основание — соревнование и результат из протокола. */
+/** Заявка на присвоение/подтверждение разряда: основание – соревнование и результат из протокола. */
 export function RankRequestDialog({ open, onClose, athleteId, athleteName, disciplines, currentRanks, coachedDisciplines = {} }: Props) {
   const toast = useToast();
   const invalidate = useInvalidate();
@@ -108,7 +108,7 @@ export function RankRequestDialog({ open, onClose, athleteId, athleteName, disci
             helperText={history.isLoading ? "Загрузка результатов…" : results.length === 0 ? "Нет результатов в зачёте по этой дисциплине" : "Протокол соревнования должен быть опубликован"}>
             {results.map((r) => (
               <MenuItem key={r.result_id} value={String(r.result_id)} sx={{ whiteSpace: "normal" }}>
-                {r.competition_title} — {r.place} место из {r.participants} ({fmtDate(r.end_date)})
+                {r.competition_title} – {r.place} место из {r.participants} ({fmtDate(r.end_date)})
               </MenuItem>
             ))}
           </TextField>

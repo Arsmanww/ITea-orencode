@@ -54,10 +54,10 @@ async def login(data: LoginIn, request: Request, session: Session) -> TokenOut:
                      action="auth.login", entity_type="user", entity_id=user.id)
     await session.commit()
     await notify_account_event(
-        user, "Выполнен вход в аккаунт — ФСП Оренбургской области",
+        user, "Выполнен вход в аккаунт – ФСП Оренбургской области",
         f"Здравствуйте, {user.first_name}!\n\n"
         f"Выполнен вход в ваш аккаунт на платформе ФСП Оренбургской области ({user.email}).\n\n"
-        "Если это были не вы — смените пароль через «Забыли пароль?» на странице входа.",
+        "Если это были не вы – смените пароль через «Забыли пароль?» на странице входа.",
     )
     return _token_response(user.id, roles, active_role)
 
@@ -120,7 +120,7 @@ async def register(data: RegisterIn, request: Request, session: Session) -> Toke
                      entity_type="user", entity_id=user.id, diff={"consent": True, "minor": minor})
     await session.commit()
     await notify_account_event(
-        user, "Регистрация на платформе — ФСП Оренбургской области",
+        user, "Регистрация на платформе – ФСП Оренбургской области",
         f"Здравствуйте, {user.first_name}!\n\n"
         f"Ваш аккаунт на платформе ФСП Оренбургской области успешно зарегистрирован.\nЛогин: {user.email}\n\n"
         "Теперь можно подавать заявки на соревнования и следить за их статусом в личном кабинете.",
@@ -137,7 +137,7 @@ _FORGOT_PASSWORD_MESSAGE = "Если такой email зарегистриров
 
 @router.post("/forgot-password", response_model=MessageOut, summary="Запросить ссылку для восстановления пароля")
 async def forgot_password(data: ForgotPasswordIn, request: Request, session: Session) -> MessageOut:
-    """Ответ одинаков независимо от того, существует ли такой email, — иначе по этому эндпоинту
+    """Ответ одинаков независимо от того, существует ли такой email, – иначе по этому эндпоинту
     можно было бы проверять, кто зарегистрирован на платформе."""
     user = await session.scalar(select(User).where(User.email == data.email.strip().lower()))
     if user is not None and user.is_active:

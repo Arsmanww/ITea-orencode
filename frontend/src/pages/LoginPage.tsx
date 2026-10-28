@@ -10,6 +10,7 @@ import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { BRAND } from "../theme";
 import { ROLE_HOME } from "../utils/labels";
+import { isEmailLike } from "../utils/password";
 
 const DOMAIN = "@fsp-demo.example.com";
 const DEMO_PASSWORD = "Demo12345!";
@@ -45,9 +46,12 @@ export function LoginPage() {
     }
   };
 
+  const emailOk = email.length === 0 || isEmailLike(email);
+  const ready = isEmailLike(email) && password.length > 0;
+
   const onSubmit = (ev: FormEvent) => {
     ev.preventDefault();
-    submit(email.trim(), password);
+    if (ready) submit(email.trim(), password);
   };
 
   return (
@@ -59,15 +63,16 @@ export function LoginPage() {
               Вход в платформу
             </Typography>
             <Typography color="text.secondary" sx={{ mb: 3 }}>
-              Один аккаунт — несколько кабинетов: роль можно сменить без повторного входа.
+              Один аккаунт – несколько кабинетов: роль можно сменить без повторного входа.
             </Typography>
             <form onSubmit={onSubmit}>
               <Stack spacing={2}>
-                <TextField label="Email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
+                <TextField label="Email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus
+                           error={!emailOk} helperText={!emailOk ? "Некорректный формат email" : " "} />
                 <TextField label="Пароль" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
                 {state?.passwordReset && !error && <Alert severity="success">Пароль изменён, войдите с новым паролем.</Alert>}
                 {error && <Alert severity="error">{error}</Alert>}
-                <Button type="submit" variant="contained" size="large" disabled={busy}>
+                <Button type="submit" variant="contained" size="large" disabled={busy || !ready}>
                   {busy ? "Входим…" : "Войти"}
                 </Button>
                 <Button component={RouterLink} to="/forgot-password" size="small" sx={{ alignSelf: "flex-start" }}>
@@ -79,7 +84,7 @@ export function LoginPage() {
             <Typography variant="body2" color="text.secondary">
               Нет аккаунта?{" "}
               <Button component={RouterLink} to="/register" size="small">
-                Быстрая регистрация
+                Зарегистрируйтесь
               </Button>
             </Typography>
           </CardContent>

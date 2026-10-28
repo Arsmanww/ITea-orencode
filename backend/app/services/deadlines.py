@@ -70,7 +70,7 @@ async def notify_registration_open(session: AsyncSession, comp: Competition) -> 
 
 
 async def run_deadline_check(session: AsyncSession, now: datetime) -> int:
-    """Напоминания о закрытии приёма заявок и о сроке ходатайств на премии Губернатора. Коммит — у вызывающего."""
+    """Напоминания о закрытии приёма заявок и о сроке ходатайств на премии Губернатора. Коммит – у вызывающего."""
     created = 0
     federation = await federation_user_ids(session)
     comps = (await session.scalars(
@@ -97,7 +97,7 @@ async def run_deadline_check(session: AsyncSession, now: datetime) -> int:
                                     entity_type="competition", entity_id=comp.id, dedup_key=f"reg-deadline:{comp.id}:{uid}")
         for uid in federation:
             created += await notify(session, uid, NotificationKind.DEADLINE_SOON, title,
-                                    f"«{comp.title}»: заявок на модерации — {len(pending)}.{_deadline_text(comp)}",
+                                    f"«{comp.title}»: заявок на модерации – {len(pending)}.{_deadline_text(comp)}",
                                     entity_type="competition", entity_id=comp.id, dedup_key=f"reg-deadline:{comp.id}:{uid}")
     created += await _governor_reminder(session, now.date(), federation)
     return created
@@ -113,8 +113,8 @@ async def _governor_reminder(session: AsyncSession, today: date, federation: lis
     for uid in federation:
         created += await notify(
             session, uid, NotificationKind.DEADLINE_SOON, "Ходатайства на премии Губернатора",
-            f"Срок подачи ходатайств на премии за спортивные результаты (Указ № 93-ук) — до {deadline:%d.%m.%Y}, осталось дней: {left}. "
-            f"Основание — опубликованные протоколы за {deadline.year - 1} год.",
+            f"Срок подачи ходатайств на премии за спортивные результаты (Указ № 93-ук) – до {deadline:%d.%m.%Y}, осталось дней: {left}. "
+            f"Основание – опубликованные протоколы за {deadline.year - 1} год.",
             dedup_key=f"governor:{deadline.year}:{threshold}:{uid}", external=threshold == min(GOVERNOR_WARNING_DAYS),
         )
     return created

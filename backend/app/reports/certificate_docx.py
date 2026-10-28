@@ -33,8 +33,8 @@ def build_certificate_docx(info: dict[str, Any], qr: bytes) -> bytes:
     rows = [
         ("Дисциплина", info["discipline"]),
         ("Статус соревнования", LEVEL_LABELS[info["level"]]),
-        ("Даты проведения", f"{fmt_date(info['start_date'])} — {fmt_date(info['end_date'])}"),
-        ("Место проведения", info["location"] or "—"),
+        ("Даты проведения", f"{fmt_date(info['start_date'])} – {fmt_date(info['end_date'])}"),
+        ("Место проведения", info["location"] or "–"),
         ("Результат", f"{info['place']} место из {info['participants']} участников"),
     ]
     if info.get("score") is not None:

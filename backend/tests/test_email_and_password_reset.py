@@ -25,7 +25,7 @@ def smtp_on(monkeypatch):
 
 
 async def issue_reset_token_and_get_raw(session, user) -> str:
-    """issue_reset_token сам генерирует токен и не возвращает его — подсматриваем за secrets.token_urlsafe."""
+    """issue_reset_token сам генерирует токен и не возвращает его – подсматриваем за secrets.token_urlsafe."""
     captured: dict[str, str] = {}
     original = secrets_module.token_urlsafe
 
@@ -76,7 +76,7 @@ async def test_notification_queued_only_when_email_configured_and_enabled(sessio
     delivery = await session.scalar(select(NotificationDelivery).where(NotificationDelivery.channel == Channel.EMAIL))
     assert delivery.status == DeliveryStatus.SENT and delivery.sent_at is not None
 
-    # выключенный тумблер — письмо не ставится в очередь
+    # выключенный тумблер – письмо не ставится в очередь
     user.email_notifications_enabled = False
     await notify(session, user.id, NotificationKind.APPLICATION_STATUS, "Ещё одна", "Текст")
     assert await email_service.dispatch_pending(session) == 0

@@ -9,7 +9,7 @@ import { MAP_HEIGHT, MAP_WIDTH, REGION_SHAPES } from "./regionShapes";
 
 /**
  * Карта Оренбургской области по районам и городским округам: наведение подсвечивает муниципалитет
- * и показывает, сколько человек там занимается. Границы — реальные (OpenStreetMap), см. regionShapes.ts.
+ * и показывает, сколько человек там занимается. Границы – реальные (OpenStreetMap), см. regionShapes.ts.
  *
  * Порядок отрисовки задан в данных (от крупных к мелким), поэтому городские округа видны
  * поверх районов, внутри которых они находятся.
@@ -47,7 +47,7 @@ function landFill(athletes: number, max: number): string {
 export function RegionMap({ regions }: { regions: RegionPoint[] }) {
   const [active, setActive] = useState<string | null>(null);
   // свёрнут по умолчанию: список городов лежит ровно над восточной частью области (Орск,
-  // Новотроицк, Медногорск) — развёрнутым он закрывает ту часть карты, про которую рассказывает
+  // Новотроицк, Медногорск) – развёрнутым он закрывает ту часть карты, про которую рассказывает
   const [listOpen, setListOpen] = useState(false);
 
   const byShape = useMemo(() => {
@@ -92,7 +92,7 @@ export function RegionMap({ regions }: { regions: RegionPoint[] }) {
 
   const countLabel = `всего ${total} ${plural(total, ["спортсмен", "спортсмена", "спортсменов"])}`;
 
-  /** Полный список для мобильной раскладки: там он лежит под картой, а не поверх, — сворачивать нечего. */
+  /** Полный список для мобильной раскладки: там он лежит под картой, а не поверх, – сворачивать нечего. */
   const list = (
     <Stack spacing={0.25} component="ul" sx={{ listStyle: "none", m: 0, p: 0 }} aria-label="Занимающиеся по муниципалитетам">
       <Typography component="li" sx={{ fontFamily: FONT_MONO, fontSize: 11, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", mb: 1 }}>
@@ -135,13 +135,23 @@ export function RegionMap({ regions }: { regions: RegionPoint[] }) {
           })}
         </svg>
 
-        {current && (
+        {current && (() => {
+          // У края карты центрированный тултип вылезает за рамку контейнера (overflow: hidden)
+          // и обрезается – поэтому у краёв меняем выравнивание на прижатое к точке региона, а не
+          // центрированное на ней; места с запасом хватает, чтобы подпись не срезало.
+          const cxPct = (current.cx / MAP_WIDTH) * 100;
+          const cyPct = (current.cy / MAP_HEIGHT) * 100;
+          const hEdge = cxPct < 18 ? "left" : cxPct > 82 ? "right" : "center";
+          const vBelow = cyPct < 18;
+          const x = hEdge === "left" ? "0%" : hEdge === "right" ? "-100%" : "-50%";
+          const y = vBelow ? "14px" : "calc(-100% - 14px)";
+          return (
           <Box
             sx={{
               position: "absolute",
-              left: `${(current.cx / MAP_WIDTH) * 100}%`,
-              top: `${(current.cy / MAP_HEIGHT) * 100}%`,
-              transform: "translate(-50%, calc(-100% - 14px))",
+              left: `${cxPct}%`,
+              top: `${cyPct}%`,
+              transform: `translate(${x}, ${y})`,
               pointerEvents: "none",
               px: 2,
               py: 1.5,
@@ -162,11 +172,12 @@ export function RegionMap({ regions }: { regions: RegionPoint[] }) {
                 : "занимающихся пока нет"}
             </Typography>
           </Box>
-        )}
+          );
+        })()}
 
         {/* список лежит в свободном верхнем правом углу карты и по умолчанию свёрнут: развёрнутым
             он закрывает как раз ту часть области, про которую рассказывает (на узких экранах
-            панель не нужна — список лежит ниже карты, см. list в конце компонента) */}
+            панель не нужна – список лежит ниже карты, см. list в конце компонента) */}
         <Box
           sx={{
             display: { xs: "none", md: "block" },

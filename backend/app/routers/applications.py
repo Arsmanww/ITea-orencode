@@ -106,7 +106,7 @@ async def create_application(competition_id: int, data: ApplicationCreate, reque
     return (await build_outs(session, [app]))[0]
 
 
-@router.get("", response_model=list[ApplicationOut], summary="Заявки на соревнование (федерация — все, остальные — свои)")
+@router.get("", response_model=list[ApplicationOut], summary="Заявки на соревнование (федерация – все, остальные – свои)")
 async def list_applications(
     competition_id: int,
     session: Session,

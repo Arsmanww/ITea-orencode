@@ -8,7 +8,7 @@ const REDUCED = typeof window !== "undefined" && window.matchMedia?.("(prefers-r
  *
  * Анимация повторяемая, но только в одну сторону: при прокрутке вниз блок появляется заново,
  * при движении вверх уже показанный блок остаётся на месте и не мигает. Сброс происходит,
- * когда блок уходит ниже экрана, — пользователь этого не видит.
+ * когда блок уходит ниже экрана, – пользователь этого не видит.
  */
 export function Reveal({ delay = 0, shift = 28, children, sx, ...rest }: { delay?: number; shift?: number } & BoxProps) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -22,8 +22,8 @@ export function Reveal({ delay = 0, shift = 28, children, sx, ...rest }: { delay
         if (entry.isIntersecting) {
           setShown(true);
         } else if (entry.boundingClientRect.top >= window.innerHeight) {
-          // блок целиком ушёл ниже экрана — вернём в исходное состояние для следующего прохода.
-          // Сверяемся именно с краем окна: сбрасывать блок, который ещё виден, нельзя — моргнёт
+          // блок целиком ушёл ниже экрана – вернём в исходное состояние для следующего прохода.
+          // Сверяемся именно с краем окна: сбрасывать блок, который ещё виден, нельзя – моргнёт
           setShown(false);
         }
       },

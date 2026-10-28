@@ -30,8 +30,8 @@ def build_athlete_report_docx(info: dict[str, Any]) -> bytes:
     profile = [
         ["Спортсмен", athlete["full_name"]],
         ["Дата рождения", f"{fmt_date(athlete['birth_date'])} ({athlete['age']} лет)"],
-        ["Муниципальное образование", athlete["municipality"] or "—"],
-        ["Дисциплины и организации", "; ".join(athlete["enrollments"]) or "—"],
+        ["Муниципальное образование", athlete["municipality"] or "–"],
+        ["Дисциплины и организации", "; ".join(athlete["enrollments"]) or "–"],
         ["Тренеры", "; ".join(athlete["coaches"]) or "самостоятельная подготовка"],
     ]
     add_table(doc, ["Сведения", ""], profile, [6.0, 20.0], font_size=10.5)
@@ -46,11 +46,11 @@ def build_athlete_report_docx(info: dict[str, Any]) -> bytes:
         rows = []
         for i, h in enumerate(history, start=1):
             result = STATUS_LABELS.get(h["status"]) or ""
-            place = f"{h['place']} из {h['participants']}" if h["place"] else (result or "—")
+            place = f"{h['place']} из {h['participants']}" if h["place"] else (result or "–")
             score = " / ".join(x for x in (fmt_num(h["score"]) if h["score"] is not None else "",
                                            f"{h['tasks_solved']} зад." if h["tasks_solved"] is not None else "",
-                                           fmt_time(h["time_seconds"])) if x) or "—"
-            rows.append([str(i), f"{fmt_date(h['start_date'])} — {fmt_date(h['end_date'])}", h["title"], h["discipline_short"],
+                                           fmt_time(h["time_seconds"])) if x) or "–"
+            rows.append([str(i), f"{fmt_date(h['start_date'])} – {fmt_date(h['end_date'])}", h["title"], h["discipline_short"],
                          LEVEL_LABELS[h["level"]], place, score, h["protocol_number"]])
         add_table(doc, ["№", "Даты", "Соревнование", "Дисциплина", "Статус", "Место", "Результат", "Протокол"], rows,
                   [0.9, 3.6, 9.0, 3.2, 2.7, 2.1, 3.0, 2.3], font_size=9, center_cols={0, 1, 4, 5, 6, 7})
@@ -61,7 +61,7 @@ def build_athlete_report_docx(info: dict[str, Any]) -> bytes:
     if ranks:
         add_table(doc, ["Разряд", "Дисциплина", "Приказ", "Присвоен", "Действует до", "Основание (соревнование, место)"],
                   [[r["rank"], r["discipline"], f"№ {r['order_number']} от {fmt_date(r['order_date'])}", fmt_date(r["assigned_at"]),
-                    fmt_date(r["valid_until"]) if r["valid_until"] else "бессрочно", r["basis"] or "—"] for r in ranks],
+                    fmt_date(r["valid_until"]) if r["valid_until"] else "бессрочно", r["basis"] or "–"] for r in ranks],
                   [4.2, 4.2, 4.0, 2.6, 2.7, 8.3], font_size=9, center_cols={3, 4})
     else:
         para(doc, "Разряды не присваивались.", italic=True)

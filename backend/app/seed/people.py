@@ -210,7 +210,7 @@ async def seed_people(session: AsyncSession, refs: Refs, rnd: Random, today: dat
     session.add_all(e for a in athletes for e in a.enrollments)
     await session.flush()
 
-    # --- связки тренер—спортсмен ---
+    # --- связки тренер–спортсмен ---
     links: dict[tuple[int, int], list[tuple[int, date, date | None]]] = {}
     by_org: dict[int | None, list[User]] = {}
     for c in coaches:

@@ -53,7 +53,7 @@ ALLOWED_REGULATION_EXT = {".pdf", ".doc", ".docx"}
 
 
 async def build_outs(session: AsyncSession, comps: list[Competition]) -> list[CompetitionOut]:
-    """Собирает ответы пакетно: этапы, возрастные группы, дисциплины и типы — по одному запросу."""
+    """Собирает ответы пакетно: этапы, возрастные группы, дисциплины и типы – по одному запросу."""
     if not comps:
         return []
     ids = [c.id for c in comps]

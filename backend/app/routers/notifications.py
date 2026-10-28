@@ -65,6 +65,6 @@ async def mark_all_read(session: Session, current: Authed) -> None:
 
 
 @router.post("/federation/expiry-check", response_model=ExpiryCheckOut,
-             summary="Запустить проверку сроков сейчас: разряды, категории, приём заявок, премии Губернатора (иначе — каждый час)")
+             summary="Запустить проверку сроков сейчас: разряды, категории, приём заявок, премии Губернатора (иначе – каждый час)")
 async def expiry_check(session: Session, current: FederationOnly) -> ExpiryCheckOut:
     return ExpiryCheckOut(created=await run_expiry_check(session, date.today()))

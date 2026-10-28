@@ -20,7 +20,7 @@ class User(Base, CreatedAtMixin):
     gender: Mapped[Gender] = mapped_column(pg_enum(Gender))
     phone: Mapped[str | None] = mapped_column(String(32))
     municipality_id: Mapped[int | None] = mapped_column(fk("municipalities.id"), index=True)
-    # внешний канал уведомлений — почта из этого же поля email; пользователь может его выключить
+    # внешний канал уведомлений – почта из этого же поля email; пользователь может его выключить
     email_notifications_enabled: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
     is_active: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
 

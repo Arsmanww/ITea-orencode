@@ -7,7 +7,7 @@ import { api } from "../api/client";
 import { isEmailLike } from "../utils/password";
 
 /**
- * Ответ сервера одинаков независимо от того, зарегистрирован ли такой email, — поэтому по
+ * Ответ сервера одинаков независимо от того, зарегистрирован ли такой email, – поэтому по
  * экрану нельзя проверить, есть ли аккаунт с данным адресом.
  */
 export function ForgotPasswordPage() {
@@ -30,7 +30,7 @@ export function ForgotPasswordPage() {
         <CardContent sx={{ p: { xs: 2.5, sm: 4 } }}>
           <Typography variant="h5" sx={{ mb: 0.5 }}>Восстановление пароля</Typography>
           <Typography color="text.secondary" sx={{ mb: 3 }}>
-            Укажите email, с которым вы регистрировались, — пришлём ссылку для сброса пароля.
+            Укажите email, с которым вы регистрировались, – пришлём ссылку для сброса пароля.
           </Typography>
 
           {sent ? (

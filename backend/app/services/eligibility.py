@@ -79,7 +79,7 @@ async def validate_participation(session: AsyncSession, comp: Competition, athle
     )).all()
     if not any(g.min_age <= age <= g.max_age for g in groups):
         names = ", ".join(f"{g.name} ({g.min_age}–{g.max_age})" for g in groups)
-        raise unprocessable(f"Возраст спортсмена на дату старта — {age} лет, он не входит в возрастные группы соревнования: {names}")
+        raise unprocessable(f"Возраст спортсмена на дату старта – {age} лет, он не входит в возрастные группы соревнования: {names}")
 
     sanction = await session.scalar(
         select(Sanction.id).where(

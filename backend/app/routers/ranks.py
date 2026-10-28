@@ -72,7 +72,7 @@ async def build_outs(session: AsyncSession, reqs: list[RankRequest]) -> list[Ran
 
 
 @router.post("/ranks/requests", response_model=RankRequestOut, status_code=status.HTTP_201_CREATED,
-             summary="Заявка на присвоение/подтверждение разряда: с тренером подаёт тренер, без тренера — спортсмен")
+             summary="Заявка на присвоение/подтверждение разряда: с тренером подаёт тренер, без тренера – спортсмен")
 async def create_rank_request(data: RankRequestIn, request: Request, session: Session, current: Submitter) -> RankRequestOut:
     comp = await session.get(Competition, data.competition_id)
     if comp is None:
@@ -138,7 +138,7 @@ async def create_rank_request(data: RankRequestIn, request: Request, session: Se
     return (await build_outs(session, [req]))[0]
 
 
-@router.get("/ranks/requests", response_model=list[RankRequestOut], summary="Мои заявки на разряд (спортсмен — свои, тренер — по подопечным)")
+@router.get("/ranks/requests", response_model=list[RankRequestOut], summary="Мои заявки на разряд (спортсмен – свои, тренер – по подопечным)")
 async def my_rank_requests(session: Session, current: Submitter) -> list[RankRequestOut]:
     col = RankRequest.athlete_id if current.active_role == RoleCode.ATHLETE else RankRequest.coach_id
     reqs = (await session.scalars(select(RankRequest).where(col == current.user.id).order_by(RankRequest.id.desc()))).all()

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     upload_dir: str = "/srv/uploads"
     max_upload_mb: int = 10
-    # внешний канал уведомлений — email через SMTP; без хоста канал отключён (уведомления остаются в кабинете)
+    # внешний канал уведомлений – email через SMTP; без хоста канал отключён (уведомления остаются в кабинете)
     smtp_host: str = ""
     smtp_port: int = 587
     smtp_user: str = ""

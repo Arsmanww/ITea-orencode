@@ -19,7 +19,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import type { AgeGroup, Organization, Paged, Ref, RegistryAthlete, RegistryCoach, RegistryJudge, RegistryOrganization } from "../api/types";
 import { AthleteHistoryDialog } from "../components/AthleteHistoryDialog";
@@ -54,8 +55,11 @@ function shortDiscipline(name: string) {
   return capitalize(name.replace("Программирование ", ""));
 }
 
-/** Общая оболочка вкладки: поиск, фильтры, таблица, пагинация и пустое состояние. */
+/** Общая оболочка вкладки: поиск, фильтры, таблица, пагинация и пустое состояние.
+ * Поиск, фильтры и страница живут в адресной строке (с префиксом на вкладку) – кнопка «Назад»
+ * браузера возвращает ровно то, что было отфильтровано, а не пустую форму. */
 function RegistryTab<T>({
+  prefix,
   path,
   filters,
   search,
@@ -63,6 +67,7 @@ function RegistryTab<T>({
   head,
   row,
 }: {
+  prefix: string;
   path: string;
   filters: (f: Filters, set: (k: string) => (v: string) => void) => ReactNode;
   search: string;
@@ -70,14 +75,52 @@ function RegistryTab<T>({
   head: ReactNode;
   row: (item: T) => ReactNode;
 }) {
-  const [f, setF] = useState<Filters>({});
-  const [q, setQ] = useState("");
-  const [page, setPage] = useState(1);
+  const [params, setParams] = useSearchParams();
+  const pk = (k: string) => `${prefix}_${k}`;
+  const f: Filters = {};
+  for (const [key, value] of params) {
+    if (key.startsWith(`${prefix}_`) && key !== pk("q") && key !== pk("page")) f[key.slice(prefix.length + 1)] = value;
+  }
+  const page = Math.max(1, Number(params.get(pk("page"))) || 1);
+
+  const [q, setQ] = useState(params.get(pk("q")) ?? "");
   const dq = useDebounced(q);
+  const mounted = useRef(false);
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (dq.trim()) next.set(pk("q"), dq.trim()); else next.delete(pk("q"));
+      next.set(pk("page"), "1");
+      return next;
+    }, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dq]);
+
   const set = (k: string) => (v: string) => {
-    setF((p) => ({ ...p, [k]: v }));
-    setPage(1);
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (v) next.set(pk(k), v); else next.delete(pk(k));
+      next.set(pk("page"), "1");
+      return next;
+    }, { replace: true });
   };
+  const setPage = (p: number) => {
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set(pk("page"), String(p));
+      return next;
+    }, { replace: true });
+  };
+  const reset = () => {
+    setQ("");
+    setParams((prev) => {
+      const next = new URLSearchParams(prev);
+      for (const key of [...next.keys()]) if (key.startsWith(`${prefix}_`)) next.delete(key);
+      return next;
+    }, { replace: true });
+  };
+
   const data = useGet<Paged<T>>(path, { ...f, q: dq.trim(), limit: PAGE, offset: (page - 1) * PAGE });
   const active = Object.values(f).some(Boolean) || dq.trim();
   return (
@@ -87,12 +130,12 @@ function RegistryTab<T>({
           size="small"
           placeholder={search}
           value={q}
-          onChange={(e) => { setQ(e.target.value); setPage(1); }}
+          onChange={(e) => setQ(e.target.value)}
           sx={{ gridColumn: { sm: "span 2", md: "span 3", lg: "auto" } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
         />
         {filters(f, set)}
-        {active && <Button onClick={() => { setF({}); setQ(""); setPage(1); }} sx={{ justifySelf: "start" }}>Сбросить</Button>}
+        {active && <Button onClick={reset} sx={{ justifySelf: "start" }}>Сбросить</Button>}
       </Box>
       <Async q={data}>
         {(d) =>
@@ -137,6 +180,7 @@ function AthletesTab() {
   return (
     <>
       <RegistryTab<RegistryAthlete>
+        prefix="a"
         path="/registry/athletes"
         search="ФИО или email спортсмена"
         hint="В реестре пока нет спортсменов"
@@ -168,7 +212,7 @@ function AthletesTab() {
               <Typography variant="caption" color="text.secondary">{fmtDate(a.birth_date)}{a.email ? ` · ${a.email}` : ""}</Typography>
             </TableCell>
             <TableCell>{a.age}</TableCell>
-            <TableCell>{a.municipality ?? "—"}</TableCell>
+            <TableCell>{a.municipality ?? "–"}</TableCell>
             <TableCell sx={{ minWidth: 320 }}>
               <Stack spacing={0.75}>
                 {a.disciplines.map((d) => (
@@ -197,6 +241,7 @@ function CoachesTab() {
   const r = useRefs();
   return (
     <RegistryTab<RegistryCoach>
+      prefix="c"
       path="/registry/coaches"
       search="ФИО или email тренера"
       hint="Тренеров пока нет"
@@ -217,9 +262,9 @@ function CoachesTab() {
       row={(c) => (
         <TableRow key={c.id} hover>
           <TableCell sx={{ fontWeight: 600 }}>{c.full_name}{c.is_judge && <Chip size="small" variant="outlined" label="также судья" sx={{ ml: 1 }} />}</TableCell>
-          <TableCell>{c.organization ?? "—"}</TableCell>
-          <TableCell>{c.municipality ?? "—"}</TableCell>
-          <TableCell>{c.disciplines.map(shortDiscipline).join(", ") || "—"}</TableCell>
+          <TableCell>{c.organization ?? "–"}</TableCell>
+          <TableCell>{c.municipality ?? "–"}</TableCell>
+          <TableCell>{c.disciplines.map(shortDiscipline).join(", ") || "–"}</TableCell>
           <TableCell align="right">{c.athletes}</TableCell>
         </TableRow>
       )}
@@ -231,6 +276,7 @@ function JudgesTab() {
   const r = useRefs();
   return (
     <RegistryTab<RegistryJudge>
+      prefix="j"
       path="/registry/judges"
       search="ФИО или email судьи"
       hint="Судей пока нет"
@@ -252,8 +298,8 @@ function JudgesTab() {
         <TableRow key={j.id} hover>
           <TableCell sx={{ fontWeight: 600 }}>{j.full_name}<Typography variant="caption" display="block" color="text.secondary">{j.municipality ?? ""}</Typography></TableCell>
           <TableCell>{j.category ?? "не присвоена"}</TableCell>
-          <TableCell>{j.valid_until ? <Chip size="small" color={j.expired ? "error" : "default"} label={j.expired ? `истекла ${fmtDate(j.valid_until)}` : fmtDate(j.valid_until)} /> : "—"}</TableCell>
-          <TableCell>{j.organization ?? "—"}</TableCell>
+          <TableCell>{j.valid_until ? <Chip size="small" color={j.expired ? "error" : "default"} label={j.expired ? `истекла ${fmtDate(j.valid_until)}` : fmtDate(j.valid_until)} /> : "–"}</TableCell>
+          <TableCell>{j.organization ?? "–"}</TableCell>
           <TableCell align="right">{j.assignments}</TableCell>
         </TableRow>
       )}
@@ -265,6 +311,7 @@ function OrganizationsTab() {
   const r = useRefs();
   return (
     <RegistryTab<RegistryOrganization>
+      prefix="o"
       path="/registry/organizations"
       search="Название организации"
       hint="Организаций пока нет"
@@ -287,7 +334,7 @@ function OrganizationsTab() {
           <TableCell sx={{ fontWeight: 600, minWidth: 220 }}>{o.name}<Typography variant="caption" display="block" color="text.secondary">{o.address ?? ""}</Typography></TableCell>
           <TableCell>{ORG_TYPE_LABEL[o.type] ?? o.type}</TableCell>
           <TableCell>{o.municipality}</TableCell>
-          <TableCell sx={{ minWidth: 200 }}>{o.disciplines.map(shortDiscipline).join(", ") || "—"}</TableCell>
+          <TableCell sx={{ minWidth: 200 }}>{o.disciplines.map(shortDiscipline).join(", ") || "–"}</TableCell>
           <TableCell align="right">{o.athletes}</TableCell>
           <TableCell align="right">{o.coaches}</TableCell>
         </TableRow>
@@ -297,7 +344,7 @@ function OrganizationsTab() {
 }
 
 export function RegistryPage() {
-  const { tab, onChange } = useTabs();
+  const { tab, onChange } = useTabs(0, "tab");
   return (
     <Box>
       <PageTitle title="Реестр" subtitle="Спортсмены, тренеры, судьи и организации: поиск и фильтры по дисциплине, организации, разряду, возрасту и муниципалитету" />

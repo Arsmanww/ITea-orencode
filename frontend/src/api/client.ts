@@ -24,7 +24,7 @@ export function setToken(value: string | null) {
     if (value) localStorage.setItem(TOKEN_KEY, value);
     else localStorage.removeItem(TOKEN_KEY);
   } catch {
-    /* хранилище недоступно — работаем только в памяти */
+    /* хранилище недоступно – работаем только в памяти */
   }
 }
 

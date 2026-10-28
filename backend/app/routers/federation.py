@@ -1,32 +1,43 @@
-"""Кабинет федерации: дашборд и очередь заявок на соревнования."""
+"""Кабинет федерации: дашборд, очередь заявок и учётные записи тренеров/судей."""
 
+import secrets
 from datetime import date, datetime, timedelta, timezone
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, Query
-from pydantic import AwareDatetime, BaseModel
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from pydantic import AwareDatetime, BaseModel, EmailStr, Field
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.audit import log_action
 from app.core.database import get_session
-from app.core.deps import CurrentUser, require_role
+from app.core.deps import ROLE_TITLES, CurrentUser, load_roles, require_role
+from app.core.security import hash_password
 from app.models import (
     AthleteEnrollment,
     AuditLog,
     CoachAthleteLink,
+    CoachProfile,
     Competition,
     CompetitionApplication,
+    Consent,
     JudgeCategoryAssignment,
     JudgeCategoryRequest,
+    JudgeProfile,
+    Municipality,
+    Organization,
     RankAssignment,
     RankRequest,
+    Role,
     User,
+    UserRole,
 )
-from app.models.enums import ApplicationStatus, CompetitionStatus, LinkStatus, RequestStatus, RoleCode
+from app.models.enums import ApplicationStatus, CompetitionStatus, Gender, LinkStatus, RequestStatus, RoleCode
 from app.routers.applications import build_outs as build_application_outs
 from app.schemas.applications import ApplicationOut
 from app.schemas.people import UserRef
 from app.services.common import full_name
+from app.services.password_reset import issue_reset_token
 from app.services.ranks import expiring_items
 
 router = APIRouter(prefix="/federation", tags=["federation"])
@@ -117,7 +128,7 @@ async def dashboard(session: Session, current: FederationOnly) -> DashboardOut:
     )
 
 
-@router.get("/applications", response_model=list[QueueItem], summary="Очередь заявок на соревнования по всем турнирам (по умолчанию — на модерации)")
+@router.get("/applications", response_model=list[QueueItem], summary="Очередь заявок на соревнования по всем турнирам (по умолчанию – на модерации)")
 async def applications_queue(
     session: Session,
     current: FederationOnly,
@@ -186,3 +197,75 @@ async def audit_log(
                for a, u in rows],
         total=total, limit=limit, offset=offset, actions=actions,
     )
+
+
+class CreateStaffIn(BaseModel):
+    """Федерация заводит тренера или судью: это не самрегистрация – пароль задаёт сам
+    тренер/судья по ссылке из письма (как при восстановлении пароля)."""
+
+    email: EmailStr = Field(max_length=255)
+    last_name: str = Field(min_length=1, max_length=100)
+    first_name: str = Field(min_length=1, max_length=100)
+    patronymic: str | None = Field(default=None, max_length=100)
+    birth_date: date
+    gender: Gender
+    phone: str | None = Field(default=None, max_length=32)
+    municipality_id: int | None = None
+    organization_id: int | None = None
+    role: Literal[RoleCode.COACH, RoleCode.JUDGE]
+    bio: str | None = Field(default=None, max_length=2000, description="Только для тренера")
+    consent: bool = Field(description="Федерация уже получила согласие на обработку ПДн офлайн")
+
+
+class StaffCreatedOut(BaseModel):
+    user_id: int
+    email: str
+    role: RoleCode
+    created_new_user: bool = Field(description="False – роль добавлена к уже существующему аккаунту (мульти-роль)")
+
+
+@router.post("/staff", response_model=StaffCreatedOut, status_code=status.HTTP_201_CREATED,
+             summary="Завести аккаунт тренера или судьи (или добавить роль существующему пользователю)")
+async def create_staff(data: CreateStaffIn, request: Request, session: Session, current: FederationOnly) -> StaffCreatedOut:
+    if data.organization_id and await session.get(Organization, data.organization_id) is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Организация не найдена")
+    if data.municipality_id and await session.get(Municipality, data.municipality_id) is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Муниципалитет не найден")
+
+    email = data.email.strip().lower()
+    role_row = await session.scalar(select(Role).where(Role.code == data.role))
+    user = await session.scalar(select(User).where(User.email == email))
+    created_new_user = user is None
+
+    if user is None:
+        # Пароль никому не известен – реальный пароль задаётся по ссылке сброса из письма ниже.
+        user = User(
+            email=email, password_hash=hash_password(secrets.token_urlsafe(32)), last_name=data.last_name.strip(),
+            first_name=data.first_name.strip(), patronymic=(data.patronymic or "").strip() or None,
+            birth_date=data.birth_date, gender=data.gender, phone=data.phone, municipality_id=data.municipality_id,
+        )
+        session.add(user)
+        await session.flush()
+    elif data.role in await load_roles(session, user.id):
+        raise HTTPException(status.HTTP_409_CONFLICT, f"У пользователя уже есть роль «{ROLE_TITLES[data.role]}»")
+
+    session.add(UserRole(user_id=user.id, role_id=role_row.id))
+    if data.role == RoleCode.COACH:
+        if await session.get(CoachProfile, user.id) is None:
+            session.add(CoachProfile(user_id=user.id, organization_id=data.organization_id, bio=data.bio))
+    else:
+        if await session.get(JudgeProfile, user.id) is None:
+            session.add(JudgeProfile(user_id=user.id, organization_id=data.organization_id))
+
+    if created_new_user and data.consent:
+        session.add(Consent(user_id=user.id, signed_by_name=f"{user.last_name} {user.first_name}", is_guardian=False, file_id=None))
+
+    await log_action(session, request, user_id=current.user.id, active_role=current.active_role, action="federation.staff_create",
+                     entity_type="user", entity_id=user.id, diff={"email": email, "role": data.role.value, "new_user": created_new_user})
+    await session.commit()
+
+    if created_new_user:
+        await issue_reset_token(session, user, purpose="activation")
+        await session.commit()
+
+    return StaffCreatedOut(user_id=user.id, email=user.email, role=data.role, created_new_user=created_new_user)

@@ -54,7 +54,7 @@ export function TournamentGrid({ nav }: { nav: Navigator }) {
       tone="white"
       eyebrow="календарь"
       title="Ближайшие турниры"
-      subtitle="Региональные, межрегиональные и всероссийские соревнования. Формат этапов — онлайн, очно или смешанный."
+      subtitle="Региональные, межрегиональные и всероссийские соревнования. Формат этапов – онлайн, очно или смешанный."
       actions={
         <Button component={RouterLink} to="/calendar" endIcon={<ArrowForwardIcon />}>
           Весь календарь
@@ -174,7 +174,7 @@ export function Leaderboard({ nav }: { nav: Navigator }) {
                   <Box sx={{ minWidth: 0 }}>
                     <Typography fontWeight={700} noWrap>{r.name}</Typography>
                     <Typography variant="body2" color="text.secondary" noWrap>
-                      {r.organization ?? r.municipality ?? "—"}
+                      {r.organization ?? r.municipality ?? "–"}
                     </Typography>
                   </Box>
                   <Chip size="small" icon={<EmojiEventsIcon />} label={`${r.prizes} ${plural(r.prizes, ["приз", "приза", "призов"])}`} sx={{ display: { xs: "none", sm: "inline-flex" }, justifySelf: "end" }} />
@@ -198,8 +198,8 @@ export function ActivityFeed() {
       {q.data && (
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" }, gap: 3 }}>
           {q.data.map((f) => (
-            <Card key={f.competition_id}>
-              <CardActionArea component={RouterLink} to={`/competitions/${f.competition_id}`} sx={{ p: 3 }}>
+            <Card key={f.competition_id} sx={{ height: "100%" }}>
+              <CardActionArea component={RouterLink} to={`/competitions/${f.competition_id}`} sx={{ p: 3, height: "100%" }}>
                 <Typography sx={{ fontFamily: FONT_MONO, fontSize: 12, color: "text.secondary", mb: 1.5 }}>{fmtDate(f.published_at)} · {f.discipline.replace("Программирование ", "")}</Typography>
                 <Typography fontWeight={700} sx={{ lineHeight: 1.35, mb: 2 }}>{shortTitle(f.title)}</Typography>
                 <Stack direction="row" spacing={1.5} alignItems="center">
@@ -219,7 +219,7 @@ export function ActivityFeed() {
 /* ---------- Как это работает ---------- */
 export function HowItWorks() {
   const steps = [
-    { n: "01", t: "Регистрация", d: "Профиль, дисциплины и согласие на обработку персональных данных. Для несовершеннолетних — данные законного представителя." },
+    { n: "01", t: "Регистрация", d: "Профиль, дисциплины и согласие на обработку персональных данных. Для несовершеннолетних – данные законного представителя." },
     { n: "02", t: "Заявка на турнир", d: "Платформа сама проверит возраст и дисциплину. Если у вас есть тренер, заявку подаёт он." },
     { n: "03", t: "Результат и разряд", d: "Протокол формируется автоматически, результат попадает в историю, а по нему можно подать заявку на разряд." },
   ];

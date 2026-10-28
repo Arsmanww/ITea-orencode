@@ -28,7 +28,7 @@ function LinkRequestForm() {
   const send = useMutation({
     mutationFn: () => api("/coach/athletes/link-request", { method: "POST", body: { athlete_id: athlete?.id, discipline_id: Number(disciplineId) } }),
     onSuccess: async () => {
-      toast.success("Запрос отправлен — спортсмен увидит его в своём кабинете");
+      toast.success("Запрос отправлен – спортсмен увидит его в своём кабинете");
       setAthlete(null);
       setError(null);
       await invalidate("/coach/athletes");
@@ -82,7 +82,7 @@ function WardsTab() {
         <Async q={wards}>
           {(list) =>
             list.length === 0 ? (
-              <EmptyState title="Подопечных пока нет" hint="Отправьте запрос на привязку — после подтверждения спортсмен появится здесь" />
+              <EmptyState title="Подопечных пока нет" hint="Отправьте запрос на привязку – после подтверждения спортсмен появится здесь" />
             ) : (
               <TableContainer>
                 <Table size="small">
@@ -105,7 +105,7 @@ function WardsTab() {
                                 {w.rank.valid_until ? `до ${fmtDate(w.rank.valid_until)} · ${daysText(w.rank.days_left)}` : "бессрочно"}
                               </Typography>
                             </>
-                          ) : "—"}
+                          ) : "–"}
                         </TableCell>
                         <TableCell sx={{ whiteSpace: "nowrap" }}>
                           <Stack direction="row" spacing={0.5} alignItems="center">
@@ -185,7 +185,7 @@ function RankRequestsTab() {
                       <TableCell>{KIND_LABEL[r.kind]}: {r.rank.name}</TableCell>
                       <TableCell sx={{ maxWidth: 260 }}>{r.competition.name}, место {r.result.place}{r.evsk_match === true && <Chip size="small" color="success" label="ЕВСК" sx={{ ml: 1 }} />}</TableCell>
                       <TableCell><ReqStatusChip status={r.status} /></TableCell>
-                      <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "—"}</TableCell>
+                      <TableCell>{r.status === "approved" ? `Приказ № ${r.order_number}, до ${fmtDate(r.valid_until)}` : r.decision_comment ?? "–"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -220,7 +220,7 @@ function ExpiringTab() {
             <Stack spacing={1}>
               {d.items.map((i) => (
                 <Alert key={i.assignment_id} severity={i.expired ? "error" : i.days_left <= 30 ? "warning" : "info"}>
-                  <b>{i.subject_name}</b>: {i.title} ({i.discipline?.replace("Программирование ", "")}) — до {fmtDate(i.valid_until)}, {daysText(i.days_left)}
+                  <b>{i.subject_name}</b>: {i.title} ({i.discipline?.replace("Программирование ", "")}) – до {fmtDate(i.valid_until)}, {daysText(i.days_left)}
                 </Alert>
               ))}
             </Stack>

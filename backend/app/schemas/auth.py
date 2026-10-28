@@ -62,7 +62,7 @@ class RegisterIn(BaseModel):
     birth_date: date
     gender: Gender
     municipality_id: int | None = None
-    organization_id: int | None = Field(default=None, description="Пусто — «без организации»")
+    organization_id: int | None = Field(default=None, description="Пусто – «без организации»")
     discipline_ids: list[int] = Field(min_length=1, max_length=6)
     consent: bool = Field(description="Согласие на обработку персональных данных")
     guardian_name: str | None = Field(default=None, max_length=255)

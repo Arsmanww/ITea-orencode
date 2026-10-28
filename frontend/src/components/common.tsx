@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import { useQuery, useQueryClient, type QueryClient, type UseQueryResult } from "@tanstack/react-query";
 import { useCallback, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { ApiError, api, download } from "../api/client";
 import type { ApplicationStatus, CompetitionStatus, RequestStatus, ValidityInfo } from "../api/types";
@@ -60,13 +61,25 @@ export function scrollToTop() {
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }
 
-/** Состояние вкладок: при переключении страница всегда показывается с начала. */
-export function useTabs(initial = 0) {
-  const [tab, setTab] = useState(initial);
+/** Состояние вкладок: при переключении страница всегда показывается с начала.
+ * С urlKey активная вкладка хранится в адресной строке – кнопка «Назад» браузера её восстанавливает. */
+export function useTabs(initial = 0, urlKey?: string) {
+  const [params, setParams] = useSearchParams();
+  const [localTab, setLocalTab] = useState(initial);
+  const urlTab = urlKey ? Number(params.get(urlKey)) : NaN;
+  const tab = urlKey && Number.isInteger(urlTab) ? urlTab : localTab;
   const select = useCallback((value: number) => {
-    setTab(value);
     scrollToTop();
-  }, []);
+    if (urlKey) {
+      setParams((prev) => {
+        const next = new URLSearchParams(prev);
+        next.set(urlKey, String(value));
+        return next;
+      }, { replace: true });
+    } else {
+      setLocalTab(value);
+    }
+  }, [urlKey, setParams]);
   return { tab, select, onChange: useCallback((_: unknown, value: number) => select(value), [select]) };
 }
 
@@ -93,7 +106,7 @@ export function ErrorBox({ error }: { error: unknown }) {
 export function Async<T>({ q, children }: { q: UseQueryResult<T, ApiError>; children: (data: T) => ReactNode }) {
   if (q.isLoading) return <Loading />;
   if (q.error) return <ErrorBox error={q.error} />;
-  // запрос выключен (например, диалог закрывается) — данных нет, рисовать нечего
+  // запрос выключен (например, диалог закрывается) – данных нет, рисовать нечего
   if (q.data === undefined) return null;
   return <>{children(q.data)}</>;
 }
@@ -272,7 +285,7 @@ export function KeyValue({ items }: { items: [string, ReactNode][] }) {
           <Typography variant="body2" color="text.secondary" sx={{ mt: { xs: 1, sm: 0 } }}>
             {k}
           </Typography>
-          <Typography component="div">{v ?? "—"}</Typography>
+          <Typography component="div">{v ?? "–"}</Typography>
         </Box>
       ))}
     </Box>

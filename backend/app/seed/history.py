@@ -68,7 +68,7 @@ ONLINE_NAME = {
     "robotics": "Квалификация в симуляторе (онлайн)", "uas": "Квалификация в симуляторе (онлайн)",
 }
 OFFLINE_NAME = {
-    "algorithmic": "Очный финал", "product": "Защита проектов (очно)", "infosec": "Очный финал (атака—защита)",
+    "algorithmic": "Очный финал", "product": "Защита проектов (очно)", "infosec": "Очный финал (атака–защита)",
     "ai": "Очная защита решений", "robotics": "Финал с реальными роботами", "uas": "Финал: полёты на полигоне",
 }
 
@@ -241,7 +241,7 @@ class History:
             for k, (nm, fm, s, e, pl) in enumerate(stages, start=1)
         )
 
-        # судейская коллегия: у региональных соревнований, у выездных — иногда
+        # судейская коллегия: у региональных соревнований, у выездных – иногда
         if is_regional or rnd.random() < 0.3:
             k = rnd.randint(3, 5) if is_regional else 1
             chosen = rnd.sample(people.judges, k)
@@ -562,7 +562,7 @@ class History:
                     snapshot={
                         "athlete": f"{a.user.last_name} {a.user.first_name} {a.user.patronymic or ''}".strip(),
                         "birth_date": a.birth.isoformat(), "competition": comp.title, "level": comp.level.value,
-                        "dates": f"{comp.start_date.isoformat()} — {comp.end_date.isoformat()}", "place": res.place,
+                        "dates": f"{comp.start_date.isoformat()} – {comp.end_date.isoformat()}", "place": res.place,
                         "score": str(res.score) if res.score is not None else None,
                     },
                     issued_at=at(comp.end_date + timedelta(days=5)), created_at=at(comp.end_date + timedelta(days=5)),

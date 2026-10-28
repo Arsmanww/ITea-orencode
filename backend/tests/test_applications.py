@@ -85,7 +85,7 @@ async def test_athlete_with_coach_cannot_apply_but_coach_can(client, session, se
 
 
 async def test_athlete_enrolled_after_start_can_apply(client, session, setup):
-    """Спортсмен зарегистрировался, когда соревнование уже шло: приём заявок открыт — значит, заявку принимаем."""
+    """Спортсмен зарегистрировался, когда соревнование уже шло: приём заявок открыт – значит, заявку принимаем."""
     started = await make_competition(session, setup["algo"], [await make_age_group(session, "14–17 лет", 14, 17)],
                                      setup["admin"], start=date.today() - timedelta(days=1))
     newcomer = await make_athlete(session, setup["algo"], birth=born(16), enrolled_since=date.today())
@@ -95,7 +95,7 @@ async def test_athlete_enrolled_after_start_can_apply(client, session, setup):
 
 
 async def test_finished_enrollment_blocks_application(client, session, setup):
-    """Занятия по дисциплине закончились — к заявке не допускаем."""
+    """Занятия по дисциплине закончились – к заявке не допускаем."""
     quit_athlete = await make_athlete(session, setup["algo"], birth=born(16))
     enrollment = await session.scalar(select(AthleteEnrollment).where(AthleteEnrollment.athlete_id == quit_athlete.id))
     enrollment.end_date = date.today() - timedelta(days=1)

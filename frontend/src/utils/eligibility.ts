@@ -13,7 +13,7 @@ export function eligibility(comp: Competition, profile: AthleteProfile): Eligibi
   const reasons: string[] = [];
   const { ok: ageOk, age } = ageFits(comp.age_groups, profile.user.birth_date, comp.start_date);
   if (!ageOk) {
-    reasons.push(`Возраст на дату старта — ${age} лет, не входит в группы: ${comp.age_groups.map((g) => `${g.name} (${g.min_age}–${g.max_age})`).join(", ")}`);
+    reasons.push(`Возраст на дату старта – ${age} лет, не входит в группы: ${comp.age_groups.map((g) => `${g.name} (${g.min_age}–${g.max_age})`).join(", ")}`);
   }
   if (!profile.enrollments.some((e) => e.discipline.id === comp.discipline.id)) {
     reasons.push(`Вы не занимаетесь дисциплиной «${comp.discipline.name}»`);

@@ -10,7 +10,7 @@ import { useToast } from "./Toast";
 const SETTINGS = "/me/notification-settings";
 
 /**
- * Внешний канал уведомлений — почта. Адрес берётся из аккаунта (логин при регистрации),
+ * Внешний канал уведомлений – почта. Адрес берётся из аккаунта (логин при регистрации),
  * отдельно привязывать ничего не нужно: пользователь может только включить/выключить канал.
  * Уведомления в личном кабинете (колокольчик) работают всегда, независимо от этого тумблера.
  */
@@ -34,12 +34,12 @@ export function NotificationChannelsCard() {
         {(s) => (
           <Stack spacing={2}>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-              <Chip size="small" color="success" label="Личный кабинет — включён" />
+              <Chip size="small" color="success" label="Личный кабинет – включён" />
               <Chip size="small" color={s.email_notifications_enabled ? "success" : "default"} icon={<EmailIcon />}
-                    label={s.email_notifications_enabled ? "Почта — включена" : "Почта — выключена"} />
+                    label={s.email_notifications_enabled ? "Почта – включена" : "Почта – выключена"} />
             </Stack>
             {!s.email_notifications_configured ? (
-              <Alert severity="info">Почта на этом стенде не подключена администратором (SMTP_HOST). Уведомления приходят в личный кабинет — значок колокольчика в шапке.</Alert>
+              <Alert severity="info">Почта на этом стенде не подключена администратором (SMTP_HOST). Уведомления приходят в личный кабинет – значок колокольчика в шапке.</Alert>
             ) : (
               <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
                 <Stack sx={{ flex: 1 }}>

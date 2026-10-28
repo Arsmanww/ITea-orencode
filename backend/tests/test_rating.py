@@ -29,8 +29,8 @@ async def world(session):
     z = await make_athlete(session, disc, birth=birth)  # дисквалифицирован
     c1 = await make_competition(session, disc, [], admin, start=date(2020, 3, 10))
     c2 = await make_competition(session, disc, [], admin, start=date(2020, 9, 10))
-    # Соревнование 1: X — 1 место (40), Y — 2 место (30), Z — 3 место (20)
-    # Соревнование 2: X — 2 место (30), Y — 5 место (0 очков)
+    # Соревнование 1: X – 1 место (40), Y – 2 место (30), Z – 3 место (20)
+    # Соревнование 2: X – 2 место (30), Y – 5 место (0 очков)
     for athlete, place in ((x, 1), (y, 2), (z, 3)):
         await add_result(session, c1, athlete, place)
     for athlete, place in ((x, 2), (y, 5)):

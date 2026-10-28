@@ -7,7 +7,7 @@ _INF = Decimal("Infinity")
 
 
 def sort_key(r: Result) -> tuple[Decimal, Decimal, Decimal]:
-    """Больше баллов лучше, больше решённых задач лучше, меньше времени лучше; пустые значения — в конец."""
+    """Больше баллов лучше, больше решённых задач лучше, меньше времени лучше; пустые значения – в конец."""
     return (
         -r.score if r.score is not None else _INF,
         Decimal(-r.tasks_solved) if r.tasks_solved is not None else _INF,

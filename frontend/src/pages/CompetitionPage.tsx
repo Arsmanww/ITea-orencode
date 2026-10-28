@@ -86,7 +86,7 @@ export function CompetitionPage() {
                   ["Календарный план", c.calendar_plan === "none" ? PLAN_LABEL.none : `${PLAN_LABEL[c.calendar_plan]}, № ${c.plan_number}`],
                   ["Очки в рейтинге", TIER_LABEL[c.rating_tier]],
                   ["Возрастные группы", <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap key="g">{c.age_groups.map((g) => <Chip key={g.id} size="small" label={`${g.name}`} />)}</Stack>],
-                  ["Приём заявок", c.registration_opens_at || c.registration_deadline ? `${fmtDateTime(c.registration_opens_at)} — ${fmtDateTime(c.registration_deadline)}` : "—"],
+                  ["Приём заявок", c.registration_opens_at || c.registration_deadline ? `${fmtDateTime(c.registration_opens_at)} – ${fmtDateTime(c.registration_deadline)}` : "–"],
                   ["Описание", c.description],
                 ]}
               />
@@ -116,14 +116,18 @@ export function CompetitionPage() {
             {role === "federation" ? (
               <>
                 <StatusActions comp={c} />
-                <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
-                  <Tab label="Заявки" />
-                  <Tab label="Судейская коллегия" />
-                  <Tab label="Результаты и протокол" />
-                </Tabs>
-                {tab === 0 && <ModerationPanel comp={c} />}
-                {tab === 1 && <JudgesPanel comp={c} />}
-                {tab === 2 && <ResultsPanel comp={c} />}
+                {c.status !== "cancelled" && (
+                  <>
+                    <Tabs value={tab} onChange={onChange} variant="scrollable" scrollButtons="auto" sx={{ mb: 2 }}>
+                      <Tab label="Заявки" />
+                      <Tab label="Судейская коллегия" />
+                      <Tab label="Результаты и протокол" />
+                    </Tabs>
+                    {tab === 0 && <ModerationPanel comp={c} />}
+                    {tab === 1 && <JudgesPanel comp={c} />}
+                    {tab === 2 && <ResultsPanel comp={c} />}
+                  </>
+                )}
               </>
             ) : (
               <JudgesPanel comp={c} />

@@ -45,7 +45,7 @@ export function AthleteHistoryDialog({ athlete: open, onClose }: { athlete: { id
                           </TableCell>
                           <TableCell>{LEVEL_LABEL[i.level]}</TableCell>
                           <TableCell align="right">
-                            <Box component="b">{i.place ?? (RESULT_STATUS_LABEL[i.status as keyof typeof RESULT_STATUS_LABEL] ?? "—")}</Box>
+                            <Box component="b">{i.place ?? (RESULT_STATUS_LABEL[i.status as keyof typeof RESULT_STATUS_LABEL] ?? "–")}</Box>
                             {i.place && <Typography variant="caption" color="text.secondary"> из {i.participants}</Typography>}
                           </TableCell>
                           <TableCell align="right">{fmtNum(i.score)}</TableCell>

@@ -34,8 +34,8 @@ def build_squad_order_docx(info: dict[str, Any]) -> bytes:
               "на основании рейтинга спортсменов Оренбургской области по итогам сезона, приказываю:", align="justify", after=6)
     para(doc, f"1. Включить в состав сборной команды Оренбургской области «{info['title']}» следующих спортсменов:", align="justify", after=6)
 
-    rows = [[str(m["position"]), m["athlete_name"], fmt_date(m["birth_date"]), m["organization"] or "—", m["rank"] or "—",
-             fmt_num(m["rating_points"]), m["coach"] or "—"] for m in members]
+    rows = [[str(m["position"]), m["athlete_name"], fmt_date(m["birth_date"]), m["organization"] or "–", m["rank"] or "–",
+             fmt_num(m["rating_points"]), m["coach"] or "–"] for m in members]
     add_table(doc, ["№", "Фамилия, имя, отчество", "Дата рожд.", "Организация", "Разряд", "Рейт. баллы", "Тренер"],
               rows, [0.9, 4.2, 2.0, 3.6, 2.4, 1.6, 3.0], font_size=9, center_cols={0, 2, 5})
     para(doc, "", after=4)
