@@ -11,12 +11,14 @@ const CoachCabinet = lazy(() => import("./pages/CoachCabinet").then((m) => ({ de
 const CompetitionFormPage = lazy(() => import("./pages/CompetitionFormPage").then((m) => ({ default: m.CompetitionFormPage })));
 const CompetitionPage = lazy(() => import("./pages/CompetitionPage").then((m) => ({ default: m.CompetitionPage })));
 const FederationCabinet = lazy(() => import("./pages/FederationCabinet").then((m) => ({ default: m.FederationCabinet })));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage })));
 const JudgeCabinet = lazy(() => import("./pages/JudgeCabinet").then((m) => ({ default: m.JudgeCabinet })));
 const LoginPage = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((m) => ({ default: m.ProfilePage })));
 const PublicHome = lazy(() => import("./pages/PublicHome").then((m) => ({ default: m.PublicHome })));
 const RatingPage = lazy(() => import("./pages/RatingPage").then((m) => ({ default: m.RatingPage })));
 const RegisterPage = lazy(() => import("./pages/RegisterPage").then((m) => ({ default: m.RegisterPage })));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage })));
 const VerifyPage = lazy(() => import("./pages/VerifyPage").then((m) => ({ default: m.VerifyPage })));
 const RegistryPage = lazy(() => import("./pages/RegistryPage").then((m) => ({ default: m.RegistryPage })));
 const ReportsPage = lazy(() => import("./pages/ReportsPage").then((m) => ({ default: m.ReportsPage })));
@@ -51,6 +53,8 @@ export default function App() {
         <Route index element={<PublicHome />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
+        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="reset-password" element={<ResetPasswordPage />} />
         <Route path="verify/:token" element={<VerifyPage />} />
 
         <Route path="calendar" element={<RequireAuth><CalendarPage /></RequireAuth>} />

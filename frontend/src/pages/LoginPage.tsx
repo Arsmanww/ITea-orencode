@@ -25,7 +25,8 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from;
+  const state = location.state as { from?: string; passwordReset?: boolean } | null;
+  const from = state?.from;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -64,9 +65,13 @@ export function LoginPage() {
               <Stack spacing={2}>
                 <TextField label="Email" type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
                 <TextField label="Пароль" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                {state?.passwordReset && !error && <Alert severity="success">Пароль изменён, войдите с новым паролем.</Alert>}
                 {error && <Alert severity="error">{error}</Alert>}
                 <Button type="submit" variant="contained" size="large" disabled={busy}>
                   {busy ? "Входим…" : "Войти"}
+                </Button>
+                <Button component={RouterLink} to="/forgot-password" size="small" sx={{ alignSelf: "flex-start" }}>
+                  Забыли пароль?
                 </Button>
               </Stack>
             </form>

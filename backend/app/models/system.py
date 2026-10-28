@@ -68,6 +68,23 @@ class ParticipationCertificate(Base, CreatedAtMixin):
     revoked: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
 
 
+class PasswordResetToken(Base, CreatedAtMixin):
+    """Запрос на сброс пароля («Забыли пароль?»).
+
+    Хранится хеш токена (sha256), а не сам токен: утечка БД не даёт захватить аккаунт по этой
+    таблице. Токен одноразовый — used_at проставляется при успешном сбросе; новый запрос
+    на тот же email не удаляет прежние строки, они просто перестают быть actionable по сроку.
+    """
+
+    __tablename__ = "password_reset_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(fk("users.id"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    expires_at: Mapped[datetime]
+    used_at: Mapped[datetime | None]
+
+
 class ContentPage(Base, CreatedAtMixin):
     """Контент публичного навигатора новичка (Д11)."""
 

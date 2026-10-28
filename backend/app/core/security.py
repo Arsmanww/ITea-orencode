@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -7,6 +8,28 @@ import jwt
 from app.core.config import settings
 
 JWT_ALGORITHM = "HS256"
+
+PASSWORD_SPECIAL_CHARS = r"!\"#$%&'()*+,\-./:;<=>?@[\]^_`{|}~"
+PASSWORD_RULES = (
+    (re.compile(r"[a-zа-яё]"), "строчную букву"),
+    (re.compile(r"[A-ZА-ЯЁ]"), "заглавную букву"),
+    (re.compile(r"\d"), "цифру"),
+    (re.compile(f"[{PASSWORD_SPECIAL_CHARS}]"), "специальный символ (например, !?#@$%)"),
+)
+
+
+def password_strength_error(password: str) -> str | None:
+    """Проверяет пароль на стандартные требования сложности: длина, регистр, цифра, спецсимвол.
+
+    Возвращает текст первой нарушенной проверки или None, если пароль им соответствует."""
+    if len(password) < 8:
+        return "Пароль должен быть не короче 8 символов"
+    if password.strip() != password:
+        return "Пароль не должен начинаться или заканчиваться пробелом"
+    missing = [label for pattern, label in PASSWORD_RULES if not pattern.search(password)]
+    if missing:
+        return "В пароле не хватает: " + ", ".join(missing)
+    return None
 
 
 def hash_password(password: str) -> str:

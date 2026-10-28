@@ -15,14 +15,16 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
     upload_dir: str = "/srv/uploads"
     max_upload_mb: int = 10
-    # бот в мессенджере MAX (токен выдаёт MasterBot); без токена канал отключён
-    max_bot_token: str = ""
-    max_api_base: str = "https://platform-api2.max.ru"
-    max_bot_username: str = ""
-    # API MAX использует сертификат НУЦ Минцифры; по умолчанию берётся корневой и промежуточный из app/services/certs
-    max_ca_file: str = ""
-    # адрес фронтенда для ссылок в QR-кодах справок
+    # внешний канал уведомлений — email через SMTP; без хоста канал отключён (уведомления остаются в кабинете)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = True
+    smtp_from: str = "ФСП Оренбургской области <noreply@fsp-orenburg.example>"
+    # адрес фронтенда для ссылок в QR-кодах справок и в письмах (восстановление пароля)
     public_base_url: str = "http://localhost:3000"
+    password_reset_ttl_minutes: int = 60
 
     @property
     def database_url(self) -> str:

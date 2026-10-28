@@ -21,7 +21,7 @@ async def notify(
     dedup_key: str | None = None,
     external: bool = True,
 ) -> bool:
-    """Создаёт уведомление в личном кабинете и ставит его в очередь отправки в MAX, если мессенджер привязан.
+    """Создаёт уведомление в личном кабинете и ставит его в очередь отправки на почту, если канал включён.
 
     С dedup_key повторно не создаётся. external=False оставляет уведомление только в кабинете.
     Возвращает True, если создано."""
@@ -35,8 +35,8 @@ async def notify(
                                      status=DeliveryStatus.SENT, sent_at=datetime.now(timezone.utc)))
     if external:
         user = await session.get(User, user_id)
-        if settings.max_bot_token and user is not None and user.max_user_id:
-            session.add(NotificationDelivery(notification_id=notification.id, channel=Channel.MAX, status=DeliveryStatus.PENDING))
+        if settings.smtp_host and user is not None and user.email_notifications_enabled:
+            session.add(NotificationDelivery(notification_id=notification.id, channel=Channel.EMAIL, status=DeliveryStatus.PENDING))
     return True
 
 

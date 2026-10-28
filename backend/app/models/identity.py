@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, PrimaryKeyConstraint, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -20,10 +20,8 @@ class User(Base, CreatedAtMixin):
     gender: Mapped[Gender] = mapped_column(pg_enum(Gender))
     phone: Mapped[str | None] = mapped_column(String(32))
     municipality_id: Mapped[int | None] = mapped_column(fk("municipalities.id"), index=True)
-    # мессенджер MAX: user_id получателя и одноразовый код привязки из deep link
-    max_user_id: Mapped[str | None] = mapped_column(String(64))
-    max_link_code: Mapped[str | None] = mapped_column(String(64), unique=True)
-    max_link_expires_at: Mapped[datetime | None]
+    # внешний канал уведомлений — почта из этого же поля email; пользователь может его выключить
+    email_notifications_enabled: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
     is_active: Mapped[bool] = mapped_column(default=True, server_default=text("true"))
 
 

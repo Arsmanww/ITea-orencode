@@ -49,6 +49,7 @@ from app.models.system import (
     Notification,
     NotificationDelivery,
     ParticipationCertificate,
+    PasswordResetToken,
 )
 
 __all__ = [
@@ -79,6 +80,7 @@ __all__ = [
     "NotificationDelivery",
     "Organization",
     "ParticipationCertificate",
+    "PasswordResetToken",
     "Protocol",
     "Rank",
     "RankAssignment",

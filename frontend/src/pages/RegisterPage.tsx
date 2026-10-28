@@ -5,8 +5,10 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import type { RegistrationOptions } from "../api/types";
 import { useAuth } from "../auth/AuthContext";
 import { Async, DateField, useGet } from "../components/common";
+import { PasswordStrength } from "../components/PasswordStrength";
 import { ageOn, todayIso } from "../utils/format";
 import { ROLE_HOME } from "../utils/labels";
+import { isEmailLike, isPasswordStrong } from "../utils/password";
 
 export function RegisterPage() {
   const { register } = useAuth();
@@ -16,6 +18,7 @@ export function RegisterPage() {
     last_name: "", first_name: "", patronymic: "", birth_date: "", gender: "male", email: "", password: "",
     municipality_id: "", organization_id: "", guardian_name: "", guardian_phone: "", guardian_email: "",
   });
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [disciplines, setDisciplines] = useState<number[]>([]);
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +27,9 @@ export function RegisterPage() {
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF((p) => ({ ...p, [k]: e.target.value }));
   const age = f.birth_date ? ageOn(f.birth_date, todayIso()) : null;
   const minor = age !== null && age < 18;
+  const emailOk = f.email.length === 0 || isEmailLike(f.email);
+  const passwordMismatch = confirmPassword.length > 0 && f.password !== confirmPassword;
+  const credentialsOk = isEmailLike(f.email) && isPasswordStrong(f.password) && f.password === confirmPassword;
 
   const orgs = useMemo(
     () => (options.data?.organizations ?? []).filter((o) => !f.municipality_id || o.municipality_id === Number(f.municipality_id)),
@@ -33,6 +39,9 @@ export function RegisterPage() {
   const submit = async (ev: FormEvent) => {
     ev.preventDefault();
     setError(null);
+    if (!isEmailLike(f.email)) return setError("Укажите корректный email");
+    if (!isPasswordStrong(f.password)) return setError("Пароль не соответствует требованиям к сложности");
+    if (f.password !== confirmPassword) return setError("Пароли не совпадают");
     if (disciplines.length === 0) return setError("Выберите хотя бы одну дисциплину");
     if (!consent) return setError("Нужно согласие на обработку персональных данных");
     setBusy(true);
@@ -118,9 +127,14 @@ export function RegisterPage() {
                   )}
 
                   <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2 }}>
-                    <TextField label="Email (логин)" type="email" value={f.email} onChange={set("email")} required autoComplete="username" />
-                    <TextField label="Пароль" type="password" value={f.password} onChange={set("password")} required autoComplete="new-password" helperText="Не короче 8 символов" />
+                    <TextField label="Email (логин)" type="email" value={f.email} onChange={set("email")} required autoComplete="username"
+                               error={!emailOk} helperText={!emailOk ? "Некорректный формат email" : " "} />
+                    <Box />
+                    <TextField label="Пароль" type="password" value={f.password} onChange={set("password")} required autoComplete="new-password" />
+                    <TextField label="Повторите пароль" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
+                               required autoComplete="new-password" error={passwordMismatch} helperText={passwordMismatch ? "Пароли не совпадают" : " "} />
                   </Box>
+                  <PasswordStrength password={f.password} />
 
                   <Box>
                     <FormControlLabel
@@ -132,7 +146,7 @@ export function RegisterPage() {
 
                   {error && <Alert severity="error">{error}</Alert>}
                   <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems={{ sm: "center" }}>
-                    <Button type="submit" variant="contained" size="large" disabled={busy}>
+                    <Button type="submit" variant="contained" size="large" disabled={busy || !credentialsOk}>
                       {busy ? "Регистрируем…" : "Зарегистрироваться"}
                     </Button>
                     <Typography variant="body2" color="text.secondary">

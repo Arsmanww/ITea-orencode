@@ -317,12 +317,9 @@ export interface RegistrationOptions {
 export interface NotificationSettings {
   in_app: boolean;
   email: string;
-  max_bot_configured: boolean;
-  max_bot_username: string | null;
-  max_bound: boolean;
+  email_notifications_configured: boolean;
+  email_notifications_enabled: boolean;
 }
-
-export interface MaxLink { code: string; link: string | null; expires_at: string }
 
 export interface Certificate {
   id: number;
@@ -428,7 +425,7 @@ export interface MyProfile {
   active_role: Role;
   registered_at: string;
   consent: { accepted: boolean; has_scan: boolean; signed_by: string | null; is_guardian: boolean };
-  max_bound: boolean;
+  email_notifications_enabled: boolean;
   athlete: {
     disciplines: ProfileDiscipline[];
     starts: number;

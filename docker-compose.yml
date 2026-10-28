@@ -32,9 +32,13 @@ services:
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
       SEED_ON_START: ${SEED_ON_START:-true}
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
-      MAX_BOT_TOKEN: ${MAX_BOT_TOKEN:-}
-      MAX_BOT_USERNAME: ${MAX_BOT_USERNAME:-}
-      MAX_API_BASE: ${MAX_API_BASE:-https://platform-api2.max.ru}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      SMTP_FROM: ${SMTP_FROM:-ФСП Оренбургской области <noreply@fsp-orenburg.example>}
+      PASSWORD_RESET_TTL_MINUTES: ${PASSWORD_RESET_TTL_MINUTES:-60}
     volumes:
       - uploads:/srv/uploads
     depends_on:

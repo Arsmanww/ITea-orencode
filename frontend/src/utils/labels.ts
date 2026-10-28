@@ -111,6 +111,8 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "auth.login_failed": "Неудачная попытка входа",
   "auth.switch_role": "Смена активной роли",
   "auth.register": "Регистрация с согласием на ПДн",
+  "auth.password_reset_requested": "Запрос на восстановление пароля",
+  "auth.password_reset": "Восстановление пароля",
   "competition.create": "Создание соревнования",
   "competition.update": "Изменение соревнования",
   "competition.regulation_upload": "Загрузка положения",
@@ -141,9 +143,7 @@ export const AUDIT_ACTION_LABEL: Record<string, string> = {
   "certificate.issue": "Выпуск справки с QR",
   "athlete.antidoping_update": "Отметка об антидопинговом курсе",
   "consent.scan_upload": "Загрузка скана согласия",
-  "profile.max_link_issued": "Ссылка привязки MAX",
-  "profile.max_bind": "Привязка MAX",
-  "profile.max_unbind": "Отвязка MAX",
+  "profile.email_notifications_toggle": "Уведомления на почту вкл/выкл",
 };
 
 /** Типы объектов журнала действий. */

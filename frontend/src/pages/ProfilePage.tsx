@@ -75,7 +75,7 @@ export function ProfilePage() {
                       <Chip key="c" size="small" color="warning" label="не найдено" />
                     ),
                   ],
-                  ["Уведомления в MAX", <Chip key="m" size="small" color={p.max_bound ? "success" : "default"} label={p.max_bound ? "подключены" : "не подключены"} />],
+                  ["Уведомления на почту", <Chip key="m" size="small" color={p.email_notifications_enabled ? "success" : "default"} label={p.email_notifications_enabled ? "включены" : "выключены"} />],
                 ]}
               />
             </Section>

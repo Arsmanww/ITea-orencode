@@ -1,13 +1,12 @@
-from datetime import date, datetime
+from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 from pydantic import AwareDatetime, BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.audit import log_action
-from app.core.config import settings
 from app.core.database import get_session
 from app.core.deps import CurrentUser, get_current_user
 from app.models import (
@@ -26,7 +25,7 @@ from app.models.enums import LinkStatus, RoleCode, TrainingStage
 from app.routers.athlete_profile import ConsentOut, consent_out
 from app.schemas.auth import UserOut
 from app.schemas.people import DisciplineRef, ValidityInfo
-from app.services import max_bot
+from app.services import email as email_service
 from app.services.common import full_name
 from app.services.eligibility import age_on
 from app.services.ranks import current_rank, make_validity
@@ -40,21 +39,18 @@ Authed = Annotated[CurrentUser, Depends(get_current_user)]
 class NotificationSettings(BaseModel):
     in_app: bool = True
     email: str
-    max_bot_configured: bool
-    max_bot_username: str | None
-    max_bound: bool
+    email_notifications_configured: bool = Field(description="Почта настроена на сервере (SMTP_HOST)")
+    email_notifications_enabled: bool = Field(description="Пользователь не выключил у себя уведомления на почту")
 
 
-class MaxLinkOut(BaseModel):
-    code: str = Field(description="Одноразовый код; его можно отправить боту сообщением")
-    link: str | None = Field(description="Ссылка https://max.ru/<бот>?start=<код>: открыть и нажать «Начать»")
-    expires_at: datetime
+class EmailNotificationsIn(BaseModel):
+    enabled: bool
 
 
 def _settings_out(current: CurrentUser) -> NotificationSettings:
     return NotificationSettings(
-        email=current.user.email, max_bot_configured=max_bot.max_enabled(), max_bot_username=settings.max_bot_username or None,
-        max_bound=bool(current.user.max_user_id),
+        email=current.user.email, email_notifications_configured=email_service.email_enabled(),
+        email_notifications_enabled=current.user.email_notifications_enabled,
     )
 
 
@@ -63,24 +59,13 @@ async def notification_settings(current: Authed) -> NotificationSettings:
     return _settings_out(current)
 
 
-@router.post("/max/link", response_model=MaxLinkOut,
-             summary="Получить одноразовую ссылку привязки MAX (действует 15 минут)")
-async def max_link(request: Request, session: Session, current: Authed) -> MaxLinkOut:
-    if not max_bot.max_enabled():
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Бот MAX на платформе не настроен")
-    code, expires_at = max_bot.new_link_code()
-    current.user.max_link_code, current.user.max_link_expires_at = code, expires_at
+@router.put("/notification-settings", response_model=NotificationSettings,
+            summary="Включить или выключить уведомления на почту (адрес берётся из аккаунта)")
+async def set_notification_settings(data: EmailNotificationsIn, request: Request, session: Session, current: Authed) -> NotificationSettings:
+    current.user.email_notifications_enabled = data.enabled
     await log_action(session, request, user_id=current.user.id, active_role=current.active_role,
-                     action="profile.max_link_issued", entity_type="user", entity_id=current.user.id)
-    await session.commit()
-    return MaxLinkOut(code=code, link=max_bot.deep_link(code), expires_at=expires_at)
-
-
-@router.delete("/max", response_model=NotificationSettings, summary="Отвязать MAX")
-async def unbind_max(request: Request, session: Session, current: Authed) -> NotificationSettings:
-    current.user.max_user_id = current.user.max_link_code = current.user.max_link_expires_at = None
-    await log_action(session, request, user_id=current.user.id, active_role=current.active_role,
-                     action="profile.max_unbind", entity_type="user", entity_id=current.user.id)
+                     action="profile.email_notifications_toggle", entity_type="user", entity_id=current.user.id,
+                     diff={"enabled": data.enabled})
     await session.commit()
     return _settings_out(current)
 
@@ -127,7 +112,7 @@ class MyProfileOut(BaseModel):
     active_role: RoleCode
     registered_at: AwareDatetime
     consent: ConsentOut
-    max_bound: bool
+    email_notifications_enabled: bool
     athlete: AthleteBlock | None
     coach: CoachBlock | None
     judge: JudgeBlock | None
@@ -208,7 +193,8 @@ async def my_profile(session: Session, current: Authed) -> MyProfileOut:
     return MyProfileOut(
         user=UserOut.model_validate(user), full_name=full_name(user), age=age_on(user.birth_date, today),
         municipality=municipality.name if municipality else None, roles=current.roles, active_role=current.active_role,
-        registered_at=user.created_at, consent=await consent_out(session, user.id), max_bound=bool(user.max_user_id),
+        registered_at=user.created_at, consent=await consent_out(session, user.id),
+        email_notifications_enabled=user.email_notifications_enabled,
         athlete=await _athlete_block(session, user.id, today) if RoleCode.ATHLETE in current.roles else None,
         coach=await _coach_block(session, user.id) if RoleCode.COACH in current.roles else None,
         judge=await _judge_block(session, user.id, today) if RoleCode.JUDGE in current.roles else None,

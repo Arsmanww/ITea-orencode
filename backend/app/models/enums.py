@@ -141,7 +141,6 @@ class NotificationKind(StrEnum):
 class Channel(StrEnum):
     IN_APP = "in_app"
     EMAIL = "email"
-    MAX = "max"
 
 
 class DeliveryStatus(StrEnum):

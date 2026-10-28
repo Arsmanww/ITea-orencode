@@ -1,12 +1,13 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
+from app.core.security import password_strength_error
 from app.models.enums import Gender, RoleCode
 
 
 class LoginIn(BaseModel):
-    email: str = Field(min_length=3, max_length=255)
+    email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=1, max_length=128)
     role: RoleCode | None = Field(default=None, description="Желаемая активная роль; по умолчанию выбирается автоматически")
 
@@ -53,7 +54,7 @@ class RbacCheckOut(BaseModel):
 class RegisterIn(BaseModel):
     """Быстрая регистрация спортсмена. Для несовершеннолетних обязательны данные законного представителя."""
 
-    email: str = Field(min_length=5, max_length=255, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    email: EmailStr = Field(max_length=255)
     password: str = Field(min_length=8, max_length=128)
     last_name: str = Field(min_length=1, max_length=100)
     first_name: str = Field(min_length=1, max_length=100)
@@ -68,6 +69,14 @@ class RegisterIn(BaseModel):
     guardian_phone: str | None = Field(default=None, max_length=32)
     guardian_email: str | None = Field(default=None, max_length=255)
 
+    @field_validator("password")
+    @classmethod
+    def _password_strength(cls, v: str) -> str:
+        error = password_strength_error(v)
+        if error:
+            raise ValueError(error)
+        return v
+
     @model_validator(mode="after")
     def _rules(self) -> "RegisterIn":
         if not self.consent:
@@ -79,3 +88,20 @@ class RegisterIn(BaseModel):
         if age < 18 and not (self.guardian_name and self.guardian_name.strip() and self.guardian_phone and self.guardian_phone.strip()):
             raise ValueError("Для несовершеннолетнего укажите ФИО и телефон законного представителя")
         return self
+
+
+class ForgotPasswordIn(BaseModel):
+    email: EmailStr = Field(max_length=255)
+
+
+class ResetPasswordIn(BaseModel):
+    token: str = Field(min_length=10, max_length=512)
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def _password_strength(cls, v: str) -> str:
+        error = password_strength_error(v)
+        if error:
+            raise ValueError(error)
+        return v

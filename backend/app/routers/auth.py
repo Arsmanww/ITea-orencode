@@ -2,6 +2,7 @@ from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +12,9 @@ from app.core.deps import ROLE_PRIORITY, ROLE_TITLES, CurrentUser, get_current_u
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models import AthleteEnrollment, AthleteProfile, Consent, Discipline, Municipality, Organization, Role, User, UserRole
 from app.models.enums import RoleCode, TrainingStage
-from app.schemas.auth import LoginIn, MeOut, RegisterIn, SwitchRoleIn, TokenOut, UserOut
+from app.schemas.auth import ForgotPasswordIn, LoginIn, MeOut, RegisterIn, ResetPasswordIn, SwitchRoleIn, TokenOut, UserOut
+from app.services.email import notify_account_event
+from app.services.password_reset import consume_reset_token, issue_reset_token
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -50,6 +53,12 @@ async def login(data: LoginIn, request: Request, session: Session) -> TokenOut:
     await log_action(session, request, user_id=user.id, active_role=active_role,
                      action="auth.login", entity_type="user", entity_id=user.id)
     await session.commit()
+    await notify_account_event(
+        user, "Выполнен вход в аккаунт — ФСП Оренбургской области",
+        f"Здравствуйте, {user.first_name}!\n\n"
+        f"Выполнен вход в ваш аккаунт на платформе ФСП Оренбургской области ({user.email}).\n\n"
+        "Если это были не вы — смените пароль через «Забыли пароль?» на странице входа.",
+    )
     return _token_response(user.id, roles, active_role)
 
 
@@ -110,4 +119,42 @@ async def register(data: RegisterIn, request: Request, session: Session) -> Toke
     await log_action(session, request, user_id=user.id, active_role=RoleCode.ATHLETE, action="auth.register",
                      entity_type="user", entity_id=user.id, diff={"consent": True, "minor": minor})
     await session.commit()
+    await notify_account_event(
+        user, "Регистрация на платформе — ФСП Оренбургской области",
+        f"Здравствуйте, {user.first_name}!\n\n"
+        f"Ваш аккаунт на платформе ФСП Оренбургской области успешно зарегистрирован.\nЛогин: {user.email}\n\n"
+        "Теперь можно подавать заявки на соревнования и следить за их статусом в личном кабинете.",
+    )
     return _token_response(user.id, [RoleCode.ATHLETE], RoleCode.ATHLETE)
+
+
+class MessageOut(BaseModel):
+    detail: str
+
+
+_FORGOT_PASSWORD_MESSAGE = "Если такой email зарегистрирован, на него отправлена ссылка для восстановления пароля"
+
+
+@router.post("/forgot-password", response_model=MessageOut, summary="Запросить ссылку для восстановления пароля")
+async def forgot_password(data: ForgotPasswordIn, request: Request, session: Session) -> MessageOut:
+    """Ответ одинаков независимо от того, существует ли такой email, — иначе по этому эндпоинту
+    можно было бы проверять, кто зарегистрирован на платформе."""
+    user = await session.scalar(select(User).where(User.email == data.email.strip().lower()))
+    if user is not None and user.is_active:
+        await issue_reset_token(session, user)
+        await log_action(session, request, user_id=user.id, active_role=None,
+                         action="auth.password_reset_requested", entity_type="user", entity_id=user.id)
+        await session.commit()
+    return MessageOut(detail=_FORGOT_PASSWORD_MESSAGE)
+
+
+@router.post("/reset-password", response_model=MessageOut, summary="Задать новый пароль по ссылке из письма")
+async def reset_password(data: ResetPasswordIn, request: Request, session: Session) -> MessageOut:
+    user = await consume_reset_token(session, data.token)
+    if user is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ссылка недействительна или уже использована, запросите новую")
+    user.password_hash = hash_password(data.new_password)
+    await log_action(session, request, user_id=user.id, active_role=None,
+                     action="auth.password_reset", entity_type="user", entity_id=user.id)
+    await session.commit()
+    return MessageOut(detail="Пароль изменён, можно войти с новым паролем")

@@ -34,8 +34,8 @@ from app.routers import (
     results,
     sanctions,
 )
+from app.services.email import email_loop
 from app.services.expiry import expiry_loop
-from app.services.max_bot import max_loop
 
 
 class HealthOut(BaseModel):
@@ -45,7 +45,7 @@ class HealthOut(BaseModel):
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    tasks = [asyncio.create_task(expiry_loop()), asyncio.create_task(max_loop())]
+    tasks = [asyncio.create_task(expiry_loop()), asyncio.create_task(email_loop())]
     yield
     for task in tasks:
         task.cancel()
